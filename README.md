@@ -29,7 +29,9 @@ following contents:
     "CUSTOMCONNSTR_COSMOSDB_KEY": "<FILL_ME>",
     "CUSTOMCONNSTR_COSMOSDB_URI": "<FILL_ME>",
     "StorageConnection": "<FILL_ME>",
+    // Name of the storage table where the verification tokens will be stored
     "VERIFICATION_TOKENS_TABLE_NAME": "<FILL_ME>",
+    // Valid url that will be called with the verification process result
     "VERIFICATION_CALLBACK_URL": "<FILL_ME>"
   }
 }

@@ -4,13 +4,16 @@ import { createTableService } from "azure-storage";
 import * as express from "express";
 import * as winston from "winston";
 
+import { isLeft } from "fp-ts/lib/Either";
+
 import { DocumentClient as DocumentDBClient } from "documentdb";
+
+import { UrlFromString } from "italia-ts-commons/lib/url";
 
 import {
   PROFILE_COLLECTION_NAME,
   ProfileModel
 } from "io-functions-commons/dist/src/models/profile";
-
 import * as documentDbUtils from "io-functions-commons/dist/src/utils/documentdb";
 import { getRequiredStringEnv } from "io-functions-commons/dist/src/utils/env";
 import { secureExpressApp } from "io-functions-commons/dist/src/utils/express";
@@ -36,6 +39,13 @@ const cosmosDbName = getRequiredStringEnv("COSMOSDB_NAME");
 const verificationCallbackUrl = getRequiredStringEnv(
   "VERIFICATION_CALLBACK_URL"
 );
+const errorOrVerificationCallbackValidUrl = UrlFromString.decode(
+  verificationCallbackUrl
+);
+if (isLeft(errorOrVerificationCallbackValidUrl)) {
+  throw Error("VERIFICATION_CALLBACK_URL must be a valid url");
+}
+const verificationCallbackValidUrl = errorOrVerificationCallbackValidUrl.value;
 
 const tableService = createTableService(storageConnectionString);
 
@@ -55,7 +65,7 @@ app.get(
     tableService,
     verificationTokensTableName,
     profileModel,
-    verificationCallbackUrl
+    verificationCallbackValidUrl
   )
 );
 

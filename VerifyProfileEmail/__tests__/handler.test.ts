@@ -2,10 +2,9 @@
 
 import { ResourceNotFoundCode } from "io-functions-commons/dist/src/utils/azure_storage";
 
-import { VerifyProfileEmailHandler } from "../handler";
+import { TokenQueryParam, VerifyProfileEmailHandler } from "../handler";
 
-const VERIFICATION_TOKEN =
-  "01DPT9QAZ6N0FJX21A86FRCWB3:8c652f8566ba53bd8cf0b1b9";
+const VERIFICATION_TOKEN = "01DPT9QAZ6N0FJX21A86FRCWB3:8c652f8566ba53bd8cf0b1b9" as TokenQueryParam;
 
 const contextMock = {
   log: {
@@ -25,7 +24,7 @@ describe("VerifyProfileEmailHandler", () => {
       tableServiceMock as any,
       "",
       undefined as any,
-      ""
+      "" as any
     );
 
     const response = await verifyProfileEmailHandler(
@@ -48,7 +47,7 @@ describe("VerifyProfileEmailHandler", () => {
       tableServiceMock as any,
       "",
       undefined as any,
-      ""
+      "" as any
     );
 
     const response = await verifyProfileEmailHandler(
@@ -77,7 +76,7 @@ describe("VerifyProfileEmailHandler", () => {
       tableServiceMock as any,
       "",
       undefined as any,
-      ""
+      "" as any
     );
 
     const response = await verifyProfileEmailHandler(
