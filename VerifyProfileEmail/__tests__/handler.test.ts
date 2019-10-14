@@ -64,8 +64,8 @@ describe("VerifyProfileEmailHandler", () => {
     const tableServiceMock = {
       retrieveEntity: jest.fn((_, __, ___, ____, f) => {
         f(undefined, {
-          ExpireAt: new Date(Date.now() - 1000 * 1000).toISOString(),
           FiscalCode: "SPNDNL80A13Y555X",
+          InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
           PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
           RowKey:
             "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"

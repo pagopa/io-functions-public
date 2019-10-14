@@ -122,13 +122,15 @@ export function VerifyProfileEmailHandler(
 
     const verificationTokenEntity = maybeVerificationTokenEntity.value;
     const {
-      ExpireAt: expireAt,
+      InvalidAfter: invalidAfter,
       FiscalCode: fiscalCode
     } = verificationTokenEntity;
 
     // Check if the token is expired
-    if (Date.now() > new Date(expireAt).getTime()) {
-      context.log.error(`${logPrefix}|Token expired|EXPIRED_AT=${expireAt}`);
+    if (Date.now() > new Date(invalidAfter).getTime()) {
+      context.log.error(
+        `${logPrefix}|Token expired|EXPIRED_AT=${invalidAfter}`
+      );
       return ResponsePermanentRedirect(
         verificationFailureUrl(
           verificationCallbackUrl,
