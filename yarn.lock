@@ -3112,10 +3112,10 @@ invert-kv@^2.0.0:
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-2.0.0.tgz#7393f5afa59ec9ff5f67a27620d11c226e3eec02"
   integrity sha512-wPVv/y/QQ/Uiirj/vh3oP+1Ww+AWehmi1g5fFWGPF6IpCBCDVrhgHRMvrLfdYcwDh3QJbGXDW4JAuzxElLSqKA==
 
-io-functions-commons@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/io-functions-commons/-/io-functions-commons-1.5.0.tgz#eb69f7756f35b4fd8ccee4e3e64c87bae29bf92d"
-  integrity sha512-bVESsh8hSnHMRZTrLtE78cFkm8Q1hu0YUcZJyNORK1ltedn1sDTIxi7/AeHYSMQXbz2DAOfEuy5/pRtsVlTC4g==
+io-functions-commons@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/io-functions-commons/-/io-functions-commons-4.0.1.tgz#5f81d4816301ba72ac7163b86d09c092f890e397"
+  integrity sha512-IA/5O6EPWakWKhPhH1NDowhf70En7gU7VUPqe1BZAfI9tWB0JmzkKFGrGLgN7uNSE/FNgfild0uPRcVKnmYrtA==
   dependencies:
     applicationinsights "^1.0.3"
     azure-storage "^2.10.3"
@@ -3616,10 +3616,10 @@ italia-ts-commons@^5.0.1:
     json-set-map "^1.0.2"
     validator "^10.1.0"
 
-italia-ts-commons@^5.1.12:
-  version "5.1.12"
-  resolved "https://registry.yarnpkg.com/italia-ts-commons/-/italia-ts-commons-5.1.12.tgz#7af568872914469a1292f6594c93af63f94d5abf"
-  integrity sha512-ssYne0ypD1FxJsKe5kd/6nKQe077RVdG3pRtbQvpruVep1vRRdAJWWyvzN398MICct2K4fjfI2mkWIDOqkVh7g==
+italia-ts-commons@^5.1.13:
+  version "5.1.13"
+  resolved "https://registry.yarnpkg.com/italia-ts-commons/-/italia-ts-commons-5.1.13.tgz#7ae919374f9c03c04e38603b7f7e9681ebee79b7"
+  integrity sha512-mXtrNG/HR6lRCOTtBrEzsxGmkHccoDXKqoc9i+J2+yGhhxcznASu+0KMC05ZR1yJP4bWliC9rXJ3hnCw0rMSnQ==
   dependencies:
     fp-ts "1.12.0"
     io-ts "1.8.5"
