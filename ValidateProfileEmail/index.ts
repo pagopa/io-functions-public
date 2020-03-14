@@ -30,8 +30,8 @@ const app = express();
 secureExpressApp(app);
 
 const storageConnectionString = getRequiredStringEnv("StorageConnection");
-const cosmosDbUri = getRequiredStringEnv("CUSTOMCONNSTR_COSMOSDB_URI");
-const cosmosDbKey = getRequiredStringEnv("CUSTOMCONNSTR_COSMOSDB_KEY");
+const cosmosDbUri = getRequiredStringEnv("COSMOSDB_URI");
+const cosmosDbKey = getRequiredStringEnv("COSMOSDB_KEY");
 const cosmosDbName = getRequiredStringEnv("COSMOSDB_NAME");
 
 const validationCallbackUrl = getRequiredStringEnv("VALIDATION_CALLBACK_URL");
