@@ -77,8 +77,8 @@ stages:
         condition: false
         steps:
         - script: |
-            npx oval validate -p openapi/index.yaml
-          displayName: 'Validate openAPI'
+            # NO API: npx oval validate -p openapi/xxx.yaml
+          displayName: 'Validate openAPI (skip)'
 
       # A4) Run Danger (skipping if not executing on a PR)
       - job: danger
@@ -110,11 +110,6 @@ stages:
     jobs:
       - job: unit_tests
         steps:
-        - task: UseNode@1
-          inputs:
-            version: $(NODE_VERSION)
-          displayName: 'Set up Node.js'
-
         - template: azure-templates/make-build-steps.yml
           parameters:
             make: install_dependencies
