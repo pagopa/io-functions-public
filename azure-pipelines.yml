@@ -63,6 +63,8 @@ stages:
             
       # A2) Analyze source code to find errors with lint
       - job: lint
+        pool:
+          vmImage: 'ubuntu-latest'      
         steps:
         - template: azure-templates/make-build-steps.yml
           parameters:
@@ -75,6 +77,8 @@ stages:
       # A3) Validate API definition: SKIPPED - API not implemented
       - job: lint_api
         condition: false
+        pool:
+          vmImage: 'ubuntu-latest'        
         steps:
         - script: |
             # NO API: npx oval validate -p openapi/xxx.yaml
@@ -107,6 +111,8 @@ stages:
   # B) Run unit tests if there is a push or pull request on any branch.
   - stage: Test
     dependsOn: []
+    pool:
+      vmImage: 'ubuntu-latest'    
     jobs:
       - job: unit_tests
         steps:
