@@ -114,4 +114,4 @@ steps:
         deploymentMethod: 'auto'
         deployToSlotOrASE: true
         slotName: 'test'
-      displayName: Deploy to staging slot only
+      displayName: Deploy to test slot
