@@ -1,3 +1,4 @@
+import { CosmosClient } from "@azure/cosmos";
 import { Context } from "@azure/functions";
 import { createTableService } from "azure-storage";
 
@@ -6,8 +7,6 @@ import * as winston from "winston";
 
 import { isLeft } from "fp-ts/lib/Either";
 
-import { DocumentClient as DocumentDBClient } from "documentdb";
-
 import { UrlFromString } from "italia-ts-commons/lib/url";
 
 import { VALIDATION_TOKEN_TABLE_NAME } from "io-functions-commons/dist/src/entities/validation_token";
@@ -15,7 +14,6 @@ import {
   PROFILE_COLLECTION_NAME,
   ProfileModel
 } from "io-functions-commons/dist/src/models/profile";
-import * as documentDbUtils from "io-functions-commons/dist/src/utils/documentdb";
 import { getRequiredStringEnv } from "io-functions-commons/dist/src/utils/env";
 import { secureExpressApp } from "io-functions-commons/dist/src/utils/express";
 import { AzureContextTransport } from "io-functions-commons/dist/src/utils/logging";
@@ -45,15 +43,16 @@ const validationCallbackValidUrl = errorOrValidationCallbackValidUrl.value;
 
 const tableService = createTableService(storageConnectionString);
 
-const documentClient = new DocumentDBClient(cosmosDbUri, {
-  masterKey: cosmosDbKey
+export const cosmosClient = new CosmosClient({
+  endpoint: cosmosDbUri,
+  key: cosmosDbKey
 });
-const documentDbDatabaseUrl = documentDbUtils.getDatabaseUri(cosmosDbName);
-const profilesCollectionUrl = documentDbUtils.getCollectionUri(
-  documentDbDatabaseUrl,
-  PROFILE_COLLECTION_NAME
-);
-const profileModel = new ProfileModel(documentClient, profilesCollectionUrl);
+
+const profilesContainer = cosmosClient
+  .database(cosmosDbName)
+  .container(PROFILE_COLLECTION_NAME);
+
+const profileModel = new ProfileModel(profilesContainer);
 
 app.get(
   "/validate-profile-email",
