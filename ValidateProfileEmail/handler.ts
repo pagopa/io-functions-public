@@ -165,7 +165,7 @@ export function ValidateProfileEmailHandler(
 
     // STEP 2: Find the profile
     const errorOrMaybeExistingProfile = await profileModel
-      .findLastVersionByModelId(fiscalCode)
+      .findLastVersionByModelId([fiscalCode])
       .run();
 
     if (isLeft(errorOrMaybeExistingProfile)) {
