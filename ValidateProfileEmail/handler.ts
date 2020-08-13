@@ -197,10 +197,9 @@ export function ValidateProfileEmailHandler(
 
     // Update the profile and set isEmailValidated to `true`
     const errorOrUpdatedProfile = await profileModel
-      .upsert({
+      .update({
         ...existingProfile,
-        isEmailValidated: true,
-        kind: "INewProfile"
+        isEmailValidated: true
       })
       .run();
 
