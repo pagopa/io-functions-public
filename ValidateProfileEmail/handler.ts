@@ -164,13 +164,13 @@ export function ValidateProfileEmailHandler(
     }
 
     // STEP 2: Find the profile
-    const errorOrMaybeExistingProfile = await profileModel.findOneProfileByFiscalCode(
-      fiscalCode
-    );
+    const errorOrMaybeExistingProfile = await profileModel
+      .findLastVersionByModelId([fiscalCode])
+      .run();
 
     if (isLeft(errorOrMaybeExistingProfile)) {
       context.log.error(
-        `${logPrefix}|Error searching the profile|ERROR=${errorOrMaybeExistingProfile.value.body}`
+        `${logPrefix}|Error searching the profile|ERROR=${errorOrMaybeExistingProfile.value}`
       );
       return ResponseSeeOtherRedirect(
         vFailureUrl(ValidationErrors.GENERIC_ERROR)
@@ -196,30 +196,17 @@ export function ValidateProfileEmailHandler(
     }
 
     // Update the profile and set isEmailValidated to `true`
-    const errorOrMaybeUpdatedProfile = await profileModel.update(
-      existingProfile.id,
-      existingProfile.fiscalCode,
-      o => ({
-        ...o,
+    const errorOrUpdatedProfile = await profileModel
+      .update({
+        ...existingProfile,
         isEmailValidated: true
       })
-    );
+      .run();
 
-    if (isLeft(errorOrMaybeUpdatedProfile)) {
+    if (isLeft(errorOrUpdatedProfile)) {
       context.log.error(
-        `${logPrefix}|Error updating profile|ERROR=${errorOrMaybeUpdatedProfile.value.body}`
+        `${logPrefix}|Error updating profile|ERROR=${errorOrUpdatedProfile.value}`
       );
-      return ResponseSeeOtherRedirect(
-        vFailureUrl(ValidationErrors.GENERIC_ERROR)
-      );
-    }
-
-    const maybeUpdatedProfile = errorOrMaybeUpdatedProfile.value;
-
-    if (isNone(maybeUpdatedProfile)) {
-      // This should never happen since if the profile doesn't exist this function
-      // will never be called, but let's deal with this anyway, you never know
-      context.log.error(`${logPrefix}|The updated profile does not exist`);
       return ResponseSeeOtherRedirect(
         vFailureUrl(ValidationErrors.GENERIC_ERROR)
       );
