@@ -43,7 +43,7 @@ const validationCallbackValidUrl = errorOrValidationCallbackValidUrl.value;
 
 const tableService = createTableService(storageConnectionString);
 
-export const cosmosClient = new CosmosClient({
+const cosmosClient = new CosmosClient({
   endpoint: cosmosDbUri,
   key: cosmosDbKey
 });
