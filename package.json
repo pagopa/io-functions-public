@@ -36,7 +36,7 @@
     "typescript": "^3.6.2"
   },
   "dependencies": {
-    "@azure/cosmos": "^3.7.4",
+    "@azure/cosmos": "^3.9.0",
     "azure-storage": "^2.10.3",
     "express": "^4.15.3",
     "fp-ts": "1.17.4",
