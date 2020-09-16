@@ -44,7 +44,7 @@
     "io-functions-express": "^0.1.0",
     "io-ts": "1.8.5",
     "italia-ts-commons": "^8.5.0",
-    "winston": "^3.2.1"
+    "winston": "^3.3.3"
   },
   "resolutions": {
     "fp-ts": "1.17.4",
