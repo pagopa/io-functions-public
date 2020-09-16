@@ -42,7 +42,7 @@
     "fp-ts": "1.17.4",
     "io-functions-commons": "13.0.0",
     "io-functions-express": "^0.1.0",
-    "io-ts": "1.8.5",
+    "io-ts": "1.10.4",
     "italia-ts-commons": "^8.5.0",
     "winston": "^3.2.1"
   },
