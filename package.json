@@ -40,7 +40,7 @@
     "azure-storage": "^2.10.3",
     "express": "^4.15.3",
     "fp-ts": "1.17.4",
-    "io-functions-commons": "13.0.0",
+    "io-functions-commons": "13.1.0",
     "io-functions-express": "^0.1.0",
     "io-ts": "1.8.5",
     "italia-ts-commons": "^8.5.0",
