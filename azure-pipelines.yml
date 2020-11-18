@@ -201,7 +201,10 @@ stages:
               azureSubscription: '$(TEST_AZURE_SUBSCRIPTION)'
               resourceGroupName: '$(TEST_RESOURCE_GROUP_NAME)'
               appName: '$(TEST_APP_NAME)'
-
+              healthcheckEndpoint: 'https://$(PRODUCTION_APP_NAME).staging.azurewebsites.net/info'
+              containerInstanceResourceGroup: $(HEALTHCHECK_CONTAINER_RESOURCE_GROUP)
+              containerInstanceVNet: $(HEALTHCHECK_CONTAINER_VNET)
+              containerInstanceSubnet: $(HEALTHCHECK_CONTAINER_SUBNET)
 
   # D) Deploy to PRODUCTION environment if one of the following conditions apply:
   #    - continuos deployment (automatic):
@@ -234,3 +237,7 @@ stages:
               azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
               resourceGroupName: '$(PRODUCTION_RESOURCE_GROUP_NAME)'
               appName: '$(PRODUCTION_APP_NAME)'
+              healthcheckEndpoint: 'https://$(PRODUCTION_APP_NAME).staging.azurewebsites.net/info'
+              containerInstanceResourceGroup: $(HEALTHCHECK_CONTAINER_RESOURCE_GROUP)
+              containerInstanceVNet: $(HEALTHCHECK_CONTAINER_VNET)
+              containerInstanceSubnet: $(HEALTHCHECK_CONTAINER_SUBNET)
