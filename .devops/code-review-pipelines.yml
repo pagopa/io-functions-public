@@ -44,12 +44,6 @@ stages:
             yarn lint
           displayName: 'Lint'
 
-      - job: validate_api_specification     
-        steps:
-        - script: |
-            npx oval validate -p openapi/index.yaml
-          displayName: 'Validate API specification'
-
       - job: danger
         condition: 
           and(
@@ -73,10 +67,6 @@ stages:
       - job: unit_tests
         steps:
         - template: azure-templates/setup-project.yml
-        
-        - script: |
-            yarn generate
-          displayName: 'Generate definitions'
 
         - script: |
             yarn test:coverage
