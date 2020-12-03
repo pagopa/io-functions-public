@@ -22,7 +22,7 @@ steps:
 - script: |
     git fetch && git checkout ${{ parameters.gitReference }}
   displayName: 'Checkout reference'  
-  condition: ne(parameters.gitReference, variables['Build.SourceVersion'])
+  condition: ne(${{ parameters.gitReference }}, variables['Build.SourceVersion'])
 
 - task: Cache@2
   inputs:
