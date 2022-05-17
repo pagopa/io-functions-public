@@ -54,6 +54,7 @@ export enum ValidationErrors {
 /**
  * Returns a ValidUrl that represents a successful validation
  */
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function validationSuccessUrl(validationCallbackUrl: ValidUrl): ValidUrl {
   return {
     href: `${validationCallbackUrl.href}?result=success&time=${Date.now()}`
@@ -63,6 +64,7 @@ function validationSuccessUrl(validationCallbackUrl: ValidUrl): ValidUrl {
 /**
  * Returns a ValidUrl that represents a failed validation
  */
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function validationFailureUrl(
   validationCallbackUrl: ValidUrl,
   error: keyof typeof ValidationErrors,
@@ -80,7 +82,8 @@ const TokenQueryParamMiddleware = RequiredQueryParamMiddleware(
   TokenQueryParam
 );
 
-// tslint:disable-next-line: cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function ValidateProfileEmailHandler(
   tableService: TableService,
   validationTokensTableName: string,
@@ -90,6 +93,7 @@ export function ValidateProfileEmailHandler(
 ): IValidateProfileEmailHandler {
   return async (context, token) => {
     const logPrefix = `ValidateProfileEmail|TOKEN=${token}`;
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     const vFailureUrl = (error: keyof typeof ValidationErrors) =>
       validationFailureUrl(validationCallbackUrl, error, timeStampGenerator);
 
@@ -222,6 +226,7 @@ export function ValidateProfileEmailHandler(
 /**
  * Wraps a ValidateProfileEmail handler inside an Express request handler.
  */
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function ValidateProfileEmail(
   tableService: TableService,
   validationTokensTableName: string,

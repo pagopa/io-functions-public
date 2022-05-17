@@ -22,6 +22,7 @@ import createAzureFunctionHandler from "io-functions-express/dist/src/createAzur
 
 import { ValidateProfileEmail } from "./handler";
 
+// eslint-disable-next-line import/order
 import { getConfigOrThrow } from "../utils/config";
 
 const config = getConfigOrThrow();
@@ -64,7 +65,9 @@ app.get(
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
-// tslint:disable-next-line: no-let
+// eslint-disable-next-line prettier/prettier
+
+// eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
 const contextTransport = new AzureContextTransport(() => logger, {
   level: "debug"
@@ -72,6 +75,7 @@ const contextTransport = new AzureContextTransport(() => logger, {
 winston.add(contextTransport);
 
 // Binds the express app to an Azure Function handler
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function httpStart(context: Context): void {
   logger = context.log;
   setAppContext(app, context);
