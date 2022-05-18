@@ -22,6 +22,7 @@ type InfoHandler = () => Promise<
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function InfoHandler(healthCheck: HealthCheck): InfoHandler {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return () =>
     healthCheck
       .fold<IResponseSuccessJson<IInfo> | IResponseErrorInternal>(

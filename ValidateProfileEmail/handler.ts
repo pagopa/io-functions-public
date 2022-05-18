@@ -91,6 +91,7 @@ export function ValidateProfileEmailHandler(
   validationCallbackUrl: ValidUrl,
   timeStampGenerator: () => number
 ): IValidateProfileEmailHandler {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return async (context, token) => {
     const logPrefix = `ValidateProfileEmail|TOKEN=${token}`;
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
