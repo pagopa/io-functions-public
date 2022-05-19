@@ -75,11 +75,10 @@ const contextTransport = new AzureContextTransport(() => logger, {
 winston.add(contextTransport);
 
 // Binds the express app to an Azure Function handler
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-function httpStart(context: Context): void {
+const httpStart = (context: Context): void => {
   logger = context.log;
   setAppContext(app, context);
   azureFunctionHandler(context);
-}
+};
 
 export default httpStart;

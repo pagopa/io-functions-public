@@ -35,10 +35,7 @@ const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
  *
  * @returns either the configuration values or a list of validation errors
  */
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-export function getConfig(): t.Validation<IConfig> {
-  return errorOrConfig;
-}
+export const getConfig = (): t.Validation<IConfig> => errorOrConfig;
 
 /**
  * Read the application configuration and check for invalid values.
@@ -47,9 +44,7 @@ export function getConfig(): t.Validation<IConfig> {
  * @returns the configuration values
  * @throws validation errors found while parsing the application configuration
  */
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-export function getConfigOrThrow(): IConfig {
-  return errorOrConfig.getOrElseL(errors => {
+export const getConfigOrThrow = (): IConfig =>
+  errorOrConfig.getOrElseL(errors => {
     throw new Error(`Invalid configuration: ${readableReport(errors)}`);
   });
-}

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { ResourceNotFoundCode } from "io-functions-commons/dist/src/utils/azure_storage";
 
 import {

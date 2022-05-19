@@ -10,35 +10,30 @@ import * as packageJson from "../package.json";
 import { checkApplicationHealth, HealthCheck } from "../utils/healthcheck";
 
 interface IInfo {
-  // eslint-disable-next-line functional/prefer-readonly-type
-  name: string;
-  // eslint-disable-next-line functional/prefer-readonly-type
-  version: string;
+  readonly name: string;
+  readonly version: string;
 }
 
 type InfoHandler = () => Promise<
   IResponseSuccessJson<IInfo> | IResponseErrorInternal
 >;
 
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-export function InfoHandler(healthCheck: HealthCheck): InfoHandler {
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  return () =>
-    healthCheck
-      .fold<IResponseSuccessJson<IInfo> | IResponseErrorInternal>(
-        problems => ResponseErrorInternal(problems.join("\n\n")),
-        _ =>
-          ResponseSuccessJson({
-            name: packageJson.name,
-            version: packageJson.version
-          })
-      )
-      .run();
-}
+export const InfoHandler = (
+  healthCheck: HealthCheck
+): InfoHandler => (): ReturnType<InfoHandler> =>
+  healthCheck
+    .fold<IResponseSuccessJson<IInfo> | IResponseErrorInternal>(
+      problems => ResponseErrorInternal(problems.join("\n\n")),
+      _ =>
+        ResponseSuccessJson({
+          name: packageJson.name,
+          version: packageJson.version
+        })
+    )
+    .run();
 
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-export function Info(): express.RequestHandler {
+export const Info = (): express.RequestHandler => {
   const handler = InfoHandler(checkApplicationHealth());
 
   return wrapRequestHandler(handler);
-}
+};
