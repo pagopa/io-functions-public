@@ -20,10 +20,8 @@ import { setAppContext } from "io-functions-commons/dist/src/utils/middlewares/c
 
 import createAzureFunctionHandler from "io-functions-express/dist/src/createAzureFunctionsHandler";
 
-import { ValidateProfileEmail } from "./handler";
-
-// eslint-disable-next-line import/order
 import { getConfigOrThrow } from "../utils/config";
+import { ValidateProfileEmail } from "./handler";
 
 const config = getConfigOrThrow();
 
@@ -64,8 +62,6 @@ app.get(
 );
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
-
-// eslint-disable-next-line prettier/prettier
 
 // eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
