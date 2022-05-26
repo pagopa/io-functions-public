@@ -76,7 +76,6 @@ const TokenQueryParamMiddleware = RequiredQueryParamMiddleware(
   TokenQueryParam
 );
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const ValidateProfileEmailHandler = (
   tableService: TableService,
   validationTokensTableName: string,
