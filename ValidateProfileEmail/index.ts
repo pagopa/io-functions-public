@@ -14,42 +14,38 @@ import {
   PROFILE_COLLECTION_NAME,
   ProfileModel
 } from "io-functions-commons/dist/src/models/profile";
-import { getRequiredStringEnv } from "io-functions-commons/dist/src/utils/env";
 import { secureExpressApp } from "io-functions-commons/dist/src/utils/express";
 import { AzureContextTransport } from "io-functions-commons/dist/src/utils/logging";
 import { setAppContext } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
 
 import createAzureFunctionHandler from "io-functions-express/dist/src/createAzureFunctionsHandler";
 
+import { getConfigOrThrow } from "../utils/config";
 import { ValidateProfileEmail } from "./handler";
+
+const config = getConfigOrThrow();
 
 // Setup Express
 const app = express();
 secureExpressApp(app);
 
-const storageConnectionString = getRequiredStringEnv("StorageConnection");
-const cosmosDbUri = getRequiredStringEnv("COSMOSDB_URI");
-const cosmosDbKey = getRequiredStringEnv("COSMOSDB_KEY");
-const cosmosDbName = getRequiredStringEnv("COSMOSDB_NAME");
-
-const validationCallbackUrl = getRequiredStringEnv("VALIDATION_CALLBACK_URL");
 const errorOrValidationCallbackValidUrl = UrlFromString.decode(
-  validationCallbackUrl
+  config.VALIDATION_CALLBACK_URL
 );
 if (isLeft(errorOrValidationCallbackValidUrl)) {
   throw Error("VALIDATION_CALLBACK_URL must be a valid url");
 }
 const validationCallbackValidUrl = errorOrValidationCallbackValidUrl.value;
 
-const tableService = createTableService(storageConnectionString);
+const tableService = createTableService(config.StorageConnection);
 
 const cosmosClient = new CosmosClient({
-  endpoint: cosmosDbUri,
-  key: cosmosDbKey
+  endpoint: config.COSMOSDB_URI,
+  key: config.COSMOSDB_KEY
 });
 
 const profilesContainer = cosmosClient
-  .database(cosmosDbName)
+  .database(config.COSMOSDB_NAME)
   .container(PROFILE_COLLECTION_NAME);
 
 const profileModel = new ProfileModel(profilesContainer);
@@ -67,7 +63,7 @@ app.get(
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
-// tslint:disable-next-line: no-let
+// eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
 const contextTransport = new AzureContextTransport(() => logger, {
   level: "debug"
@@ -75,10 +71,10 @@ const contextTransport = new AzureContextTransport(() => logger, {
 winston.add(contextTransport);
 
 // Binds the express app to an Azure Function handler
-function httpStart(context: Context): void {
+const httpStart = (context: Context): void => {
   logger = context.log;
   setAppContext(app, context);
   azureFunctionHandler(context);
-}
+};
 
 export default httpStart;

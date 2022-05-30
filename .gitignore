@@ -47,3 +47,6 @@ coverage
 yarn-error.log
 
 generated
+# eslint section
+!.eslintrc.js
+.eslintcache
