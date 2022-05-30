@@ -10,30 +10,30 @@ import * as packageJson from "../package.json";
 import { checkApplicationHealth, HealthCheck } from "../utils/healthcheck";
 
 interface IInfo {
-  name: string;
-  version: string;
+  readonly name: string;
+  readonly version: string;
 }
 
 type InfoHandler = () => Promise<
   IResponseSuccessJson<IInfo> | IResponseErrorInternal
 >;
 
-export function InfoHandler(healthCheck: HealthCheck): InfoHandler {
-  return () =>
-    healthCheck
-      .fold<IResponseSuccessJson<IInfo> | IResponseErrorInternal>(
-        problems => ResponseErrorInternal(problems.join("\n\n")),
-        _ =>
-          ResponseSuccessJson({
-            name: packageJson.name,
-            version: packageJson.version
-          })
-      )
-      .run();
-}
+export const InfoHandler = (
+  healthCheck: HealthCheck
+): InfoHandler => (): ReturnType<InfoHandler> =>
+  healthCheck
+    .fold<IResponseSuccessJson<IInfo> | IResponseErrorInternal>(
+      problems => ResponseErrorInternal(problems.join("\n\n")),
+      _ =>
+        ResponseSuccessJson({
+          name: packageJson.name,
+          version: packageJson.version
+        })
+    )
+    .run();
 
-export function Info(): express.RequestHandler {
+export const Info = (): express.RequestHandler => {
   const handler = InfoHandler(checkApplicationHealth());
 
   return wrapRequestHandler(handler);
-}
+};
