@@ -20,9 +20,8 @@ import { setAppContext } from "io-functions-commons/dist/src/utils/middlewares/c
 
 import createAzureFunctionHandler from "io-functions-express/dist/src/createAzureFunctionsHandler";
 
-import { ValidateProfileEmail } from "./handler";
-
 import { getConfigOrThrow } from "../utils/config";
+import { ValidateProfileEmail } from "./handler";
 
 const config = getConfigOrThrow();
 
@@ -64,7 +63,7 @@ app.get(
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
-// tslint:disable-next-line: no-let
+// eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
 const contextTransport = new AzureContextTransport(() => logger, {
   level: "debug"
@@ -72,10 +71,10 @@ const contextTransport = new AzureContextTransport(() => logger, {
 winston.add(contextTransport);
 
 // Binds the express app to an Azure Function handler
-function httpStart(context: Context): void {
+const httpStart = (context: Context): void => {
   logger = context.log;
   setAppContext(app, context);
   azureFunctionHandler(context);
-}
+};
 
 export default httpStart;

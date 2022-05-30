@@ -1,5 +1,3 @@
-/* tslint:disable: no-any */
-
 import { ResourceNotFoundCode } from "io-functions-commons/dist/src/utils/azure_storage";
 
 import {
