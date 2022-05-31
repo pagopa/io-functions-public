@@ -140,15 +140,11 @@ stages:
     jobs:
       - job: 'do_healthcheck'       
         steps:  
-          - template: templates/rest-healthcheck/template.yaml@pagopaCommons 
-            parameters:
-              azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              appName: '$(PRODUCTION_APP_NAME)'
-              endpoint: 'https://$(PRODUCTION_APP_NAME)-staging.azurewebsites.net/info'
-              endpointType: 'private'
-              containerInstanceResourceGroup: 'io-p-rg-common'
-              containerInstanceVNet: 'io-p-vnet-common'
-              containerInstanceSubnet: 'azure-devops' 
+        - checkout: none
+        - script: |
+            # fails if response status is not 2xx
+            curl -f 'https://$(PRODUCTION_APP_NAME)-staging.azurewebsites.net/info'
+          displayName: 'Healthcheck'
 
   # Promote the staging instance to production
   - stage: Deploy_production
