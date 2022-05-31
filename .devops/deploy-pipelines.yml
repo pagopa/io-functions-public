@@ -1,5 +1,12 @@
 # Azure DevOps pipeline to release a new version and deploy to production.
 
+variables:
+  # Configuration to run the healthcheck container
+  HEALTHCHECK_CONTAINER_RG: 'io-p-rg-common'
+  HEALTHCHECK_CONTAINER_VNET: 'io-p-vnet-common'
+  HEALTHCHECK_CONTAINER_SUBNET: 'azure-devops' 
+  HEALTHCHECK_PATH: '/info' 
+
 parameters:
   - name: 'RELEASE_SEMVER'
     displayName: 'When packing a release, define the version bump to apply'
@@ -135,6 +142,8 @@ stages:
 
   # Check that the staging instance is healthy
   - stage: Healthcheck
+    pool:
+      name: io-prod-linux
     dependsOn:
       - Deploy_staging
     jobs:
