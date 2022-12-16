@@ -470,6 +470,20 @@
     node-fetch "^2.6.0"
     validator "^10.1.0"
 
+"@pagopa/ts-commons@^10.10.0":
+  version "10.10.0"
+  resolved "https://registry.yarnpkg.com/@pagopa/ts-commons/-/ts-commons-10.10.0.tgz#9eae84003956ac44aad710b91abd7614bb09665e"
+  integrity sha512-/bIEHIvswrp9mi+NdBOJftPAP9YeI5Z1+mK1WV/RDTvy6nb5Zd7C9kwdBJbXjl4zW/eiQsb5PqLHEC6odQKlWg==
+  dependencies:
+    abort-controller "^3.0.0"
+    agentkeepalive "^4.1.4"
+    applicationinsights "^1.8.10"
+    fp-ts "^2.11.0"
+    io-ts "^2.2.16"
+    json-set-map "^1.1.2"
+    node-fetch "^2.6.0"
+    validator "^13.7.0"
+
 "@types/babel__core@^7.1.0":
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.2.tgz#608c74f55928033fce18b99b213c16be4b3d114f"
@@ -831,15 +845,6 @@ agent-base@4, agent-base@^4.3.0:
   integrity sha512-salcGninV0nPrwpGNn4VTXBb1SOuXQBiqbrNXoeizJsHrsL6ERFM2Ne3JUSBWRE6aeNJI2ROP/WEEIDUiDe3cg==
   dependencies:
     es6-promisify "^5.0.0"
-
-agentkeepalive@^4.1.2:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/agentkeepalive/-/agentkeepalive-4.1.3.tgz#360a09d743a1f4fde749f9ba07caa6575d08259a"
-  integrity sha512-wn8fw19xKZwdGPO47jivonaHRTd+nGOMP1z11sgGeQzDy2xd5FG0R67dIMcKHDE2cJ5y+YXV30XVGUBPRSY7Hg==
-  dependencies:
-    debug "^4.1.0"
-    depd "^1.1.2"
-    humanize-ms "^1.2.1"
 
 agentkeepalive@^4.1.4:
   version "4.1.4"
@@ -3347,12 +3352,17 @@ forwarded@~0.1.2:
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.2.tgz#98c23dab1175657b8c0573e8ceccd91b0ff18c84"
   integrity sha1-mMI9qxF1ZXuMBXPozszZGw/xjIQ=
 
-fp-ts@1.12.0, fp-ts@1.17.4, fp-ts@^1.0.0, fp-ts@^2.11.0:
+fp-ts@1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-1.12.0.tgz#d333310e4ac104cdcb6bea47908e381bb09978e7"
+  integrity sha512-fWwnAgVlTsV26Ruo9nx+fxNHIm6l1puE1VJ/C0XJ3nRQJJJIgRHYw6sigB3MuNFZL1o4fpGlhwFhcbxHK0RsOA==
+
+fp-ts@1.17.4, fp-ts@^1.0.0:
   version "1.17.4"
   resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-1.17.4.tgz#f41eeeb2a8924b51b11521f93f5f59d28d0503be"
   integrity sha512-OaIM5w0FceJm6zO0OjMY05Rdg02nlFCpilTrMitzGnHORh/8neP0NH9OcRvnGQdOEh2T5xjtcutzzctvWOQtCQ==
 
-fp-ts@^2.13.1:
+fp-ts@^2.11.0, fp-ts@^2.13.1:
   version "2.13.1"
   resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.13.1.tgz#1bf2b24136cca154846af16752dc29e8fa506f2a"
   integrity sha512-0eu5ULPS2c/jsa1lGFneEFFEdTbembJv8e4QKXeVJ3lm/5hyve06dlKZrpxmMwJt6rYen7sxmHHK2CLaXvWuWQ==
@@ -4034,14 +4044,14 @@ io-functions-express@^0.1.0, io-functions-express@^0.1.1:
   resolved "https://registry.yarnpkg.com/io-functions-express/-/io-functions-express-0.1.1.tgz#6ae954fe89ec1d797c5e5d10eca5e77f08ff4a4d"
   integrity sha512-Co7sovRyB0lxgU6NFh5v72Apude3XbgKQtqA7slryvKoEqLAvlnLU7DtsYVoF62O3ZJdtSHYf9JWuhDc/di1mg==
 
-io-ts@1.8.5, io-ts@^2.2.16:
+io-ts@1.8.5:
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-1.8.5.tgz#2e102f7f518abe17b0f7e7ede0db54a4c4ddc188"
   integrity sha512-4HzDeg7mTygFjFIKh7ajBSanoVaFryYSFI0ocdwndSWl3eWQXhg3wVR0WI+Li5Vq11TIsoIngQszVbN4dy//9A==
   dependencies:
     fp-ts "^1.0.0"
 
-io-ts@^2.2.20:
+io-ts@^2.2.16, io-ts@^2.2.20:
   version "2.2.20"
   resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-2.2.20.tgz#be42b75f6668a2c44f706f72ee6e4c906777c7f5"
   integrity sha512-Rq2BsYmtwS5vVttie4rqrOCIfHCS9TgpRLFpKQCM1wZBBRY9nWVGmEvm2FnDbSE2un1UE39DvFpTR5UL47YDcA==
@@ -4608,20 +4618,6 @@ italia-ts-commons@^7.0.1:
   integrity sha512-IIZYim8LydSA3nbeCxbR23marXhx3Z/FLUh7cV6XxNrB5OpKeVMmQhXV42oErP+g/vsrCQ/LRSrLX8cpi1Nghg==
   dependencies:
     agentkeepalive "https://github.com/pagopa/agentkeepalive#v4.1.1"
-    applicationinsights "^1.7.4"
-    fp-ts "1.17.4"
-    io-ts "1.8.5"
-    json-set-map "^1.0.2"
-    node-fetch "^2.6.0"
-    validator "^10.1.0"
-
-italia-ts-commons@^8.5.0:
-  version "8.5.0"
-  resolved "https://registry.yarnpkg.com/italia-ts-commons/-/italia-ts-commons-8.5.0.tgz#9967ec1b94745f482d5cc942a1bacf7de6f6461b"
-  integrity sha512-pTX90/WW987t7pdcbQngCFm35c3gQlDFIUCnDZ6VCo5vNMl8VwdZztGIcYyEaJw6xMjb1WjSRlltnDdSe0B9Eg==
-  dependencies:
-    abort-controller "^3.0.0"
-    agentkeepalive "^4.1.2"
     applicationinsights "^1.7.4"
     fp-ts "1.17.4"
     io-ts "1.8.5"
@@ -8768,6 +8764,11 @@ validator@^11.0.0:
   version "11.1.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-11.1.0.tgz#ac18cac42e0aa5902b603d7a5d9b7827e2346ac4"
   integrity sha512-qiQ5ktdO7CD6C/5/mYV4jku/7qnqzjrxb3C/Q5wR3vGGinHTgJZN/TdFT3ZX4vXhX2R1PXx42fB1cn5W+uJ4lg==
+
+validator@^13.7.0:
+  version "13.7.0"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-13.7.0.tgz#4f9658ba13ba8f3d82ee881d3516489ea85c0857"
+  integrity sha512-nYXQLCBkpJ8X6ltALua9dRrZDHVYxjJ1wgskNt1lH9fzGjs3tgojGSCBjmEPwkWS1y29+DrizMTW19Pr9uB2nw==
 
 validator@~9.4.1:
   version "9.4.1"
