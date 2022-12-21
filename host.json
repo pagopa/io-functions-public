@@ -9,9 +9,12 @@
     "http": {
       "routePrefix": ""
     },
-
     "durableTask": {
       "hubName": "%SLOT_TASK_HUBNAME%"
     }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[3.*, 4.0.0)"
   }
 }
