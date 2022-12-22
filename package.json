@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "build:production": "npm run prestart && npm prune --production",
+    "build:production": "npm run prestart && yarn install --production",
     "watch": "tsc --w",
     "prestart": "npm run build && func extensions install",
     "start:host": "func start",
@@ -12,7 +12,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint . -c .eslintrc.js --ext .ts,.tsx",
-    "dist:modules": "modclean -r -n default:safe && npm prune --production",
+    "dist:modules": "modclean -r -n default:safe && yarn install --production",
     "predeploy": "npm-run-all build dist:modules",
     "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",
     "version": "auto-changelog -p --config .auto-changelog.json --unreleased && git add CHANGELOG.md"
