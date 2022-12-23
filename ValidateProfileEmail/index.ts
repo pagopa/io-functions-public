@@ -7,18 +7,18 @@ import * as winston from "winston";
 
 import { isLeft } from "fp-ts/lib/Either";
 
-import { UrlFromString } from "italia-ts-commons/lib/url";
+import { UrlFromString } from "@pagopa/ts-commons/lib/url";
 
-import { VALIDATION_TOKEN_TABLE_NAME } from "io-functions-commons/dist/src/entities/validation_token";
+import { VALIDATION_TOKEN_TABLE_NAME } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
 import {
   PROFILE_COLLECTION_NAME,
   ProfileModel
-} from "io-functions-commons/dist/src/models/profile";
-import { secureExpressApp } from "io-functions-commons/dist/src/utils/express";
-import { AzureContextTransport } from "io-functions-commons/dist/src/utils/logging";
-import { setAppContext } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
+} from "@pagopa/io-functions-commons/dist/src/models/profile";
+import { secureExpressApp } from "@pagopa/io-functions-commons/dist/src/utils/express";
+import { AzureContextTransport } from "@pagopa/io-functions-commons/dist/src/utils/logging";
+import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 
-import createAzureFunctionHandler from "io-functions-express/dist/src/createAzureFunctionsHandler";
+import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 
 import { getConfigOrThrow } from "../utils/config";
 import { ValidateProfileEmail } from "./handler";
@@ -35,7 +35,7 @@ const errorOrValidationCallbackValidUrl = UrlFromString.decode(
 if (isLeft(errorOrValidationCallbackValidUrl)) {
   throw Error("VALIDATION_CALLBACK_URL must be a valid url");
 }
-const validationCallbackValidUrl = errorOrValidationCallbackValidUrl.value;
+const validationCallbackValidUrl = errorOrValidationCallbackValidUrl.right;
 
 const tableService = createTableService(config.StorageConnection);
 
