@@ -1,4 +1,4 @@
-import { ResourceNotFoundCode } from "io-functions-commons/dist/src/utils/azure_storage";
+import { ResourceNotFoundCode } from "@pagopa/io-functions-commons/dist/src/utils/azure_storage";
 
 import {
   TokenQueryParam,
