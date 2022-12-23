@@ -9,12 +9,12 @@ import {
 import { toError } from "fp-ts/lib/Either";
 import { TaskEither } from "fp-ts/lib/TaskEither";
 import fetch from "node-fetch";
-import { getConfig, IConfig } from "./config";
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { apply } from "fp-ts";
 import * as RA from "fp-ts/lib/ReadonlyArray";
+import { getConfig, IConfig } from "./config";
 
 type ProblemSource = "AzureCosmosDB" | "AzureStorage" | "Config" | "Url";
 // eslint-disable-next-line functional/prefer-readonly-type, @typescript-eslint/naming-convention
