@@ -15,7 +15,7 @@ import {
   IResponseErrorValidation,
   IResponseSeeOtherRedirect,
   ResponseSeeOtherRedirect
-} from "@pagopa/ts-commons//lib/responses";
+} from "@pagopa/ts-commons/lib/responses";
 import { PatternString } from "@pagopa/ts-commons/lib/strings";
 
 import { RequiredQueryParamMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_query_param";
