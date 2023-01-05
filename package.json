@@ -44,7 +44,7 @@
     "@pagopa/openapi-codegen-ts": "^10.0.5",
     "@pagopa/ts-commons": "^10.10.0",
     "azure-storage": "^2.10.7",
-    "express": "^4.15.3",
+    "express": "^4.17.3",
     "fp-ts": "^2.13.1",
     "io-ts": "^2.2.20",
     "winston": "^3.3.3"
