@@ -54,9 +54,10 @@ export enum ValidationErrors {
 /**
  * Returns a ValidUrl that represents a successful validation
  */
-const validationSuccessUrl = (validationCallbackUrl: ValidUrl): ValidUrl => ({
-  href: `${validationCallbackUrl.href}?result=success&time=${Date.now()}`
-});
+const validationSuccessUrl = (validationCallbackUrl: ValidUrl): ValidUrl =>
+  ({
+    href: `${validationCallbackUrl.href}?result=success&time=${Date.now()}`
+  } as ValidUrl);
 
 /**
  * Returns a ValidUrl that represents a failed validation
@@ -65,11 +66,12 @@ const validationFailureUrl = (
   validationCallbackUrl: ValidUrl,
   error: keyof typeof ValidationErrors,
   timeStampGenerator: () => number
-): ValidUrl => ({
-  href: `${
-    validationCallbackUrl.href
-  }?result=failure&error=${error}&time=${timeStampGenerator()}`
-});
+): ValidUrl =>
+  ({
+    href: `${
+      validationCallbackUrl.href
+    }?result=failure&error=${error}&time=${timeStampGenerator()}`
+  } as ValidUrl);
 
 const TokenQueryParamMiddleware = RequiredQueryParamMiddleware(
   "token",
