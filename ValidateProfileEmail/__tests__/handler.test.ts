@@ -12,7 +12,6 @@ import * as TE from "fp-ts/TaskEither";
 import * as O from "fp-ts/Option";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
 import { aFiscalCode, aRetrievedProfile, anEmail } from "../__mocks__/profile";
-import { not } from "fp-ts/lib/Predicate";
 
 const VALIDATION_TOKEN = "01DPT9QAZ6N0FJX21A86FRCWB3:8c652f8566ba53bd8cf0b1b9" as TokenQueryParam;
 
@@ -52,6 +51,22 @@ const successUrl = (timestampGenerator: () => number) => {
   return `?result=success&time=${timestampGenerator()}`;
 };
 
+const mockRetrieveEntity = jest
+  .fn()
+  .mockImplementation((_, __, ___, ____, f) => {
+    f(undefined, {
+      Email: anEmail,
+      FiscalCode: aFiscalCode,
+      InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
+      PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
+      RowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
+    });
+  });
+
+const tableServiceMock = {
+  retrieveEntity: mockRetrieveEntity
+};
+
 function generateProfileEmails(
   count: number,
   throws: boolean = false,
@@ -73,11 +88,9 @@ const profileEmailReader: IProfileEmailReader = {
 
 describe("ValidateProfileEmailHandler", () => {
   it("should return a redirect with a GENERIC_ERROR in case the query versus the table storage fails", async () => {
-    const tableServiceMock = {
-      retrieveEntity: jest.fn((_, __, ___, ____, f) => {
-        f(new Error());
-      })
-    };
+    mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
+      f(new Error());
+    });
 
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
@@ -103,11 +116,9 @@ describe("ValidateProfileEmailHandler", () => {
   });
 
   it("should return a redirect with a INVALID_TOKEN error in case the token if not found in the table", async () => {
-    const tableServiceMock = {
-      retrieveEntity: jest.fn((_, __, ___, ____, f) => {
-        f({ code: ResourceNotFoundCode });
-      })
-    };
+    mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
+      f({ code: ResourceNotFoundCode });
+    });
 
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
@@ -133,19 +144,6 @@ describe("ValidateProfileEmailHandler", () => {
   });
 
   it("should return a redirect with a TOKEN_EXPIRED error in case the token is expired", async () => {
-    const tableServiceMock = {
-      retrieveEntity: jest.fn((_, __, ___, ____, f) => {
-        f(undefined, {
-          Email: anEmail,
-          FiscalCode: aFiscalCode,
-          InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
-          PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-          RowKey:
-            "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
-        });
-      })
-    };
-
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
@@ -170,19 +168,6 @@ describe("ValidateProfileEmailHandler", () => {
   });
 
   it("when a citizen changes e-mail it should return IResponseErrorPreconditionFailed if the e-mail is already taken (unique email enforcement = %uee)", async () => {
-    const tableServiceMock = {
-      retrieveEntity: jest.fn((_, __, ___, ____, f) => {
-        f(undefined, {
-          Email: anEmail,
-          FiscalCode: aFiscalCode,
-          InvalidAfter: new Date(Date.now() + 1000 * 1000).toISOString(),
-          PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-          RowKey:
-            "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
-        });
-      })
-    };
-
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
@@ -209,19 +194,6 @@ describe("ValidateProfileEmailHandler", () => {
   });
 
   it("returns 500 when the unique e-mail enforcement check fails", async () => {
-    const tableServiceMock = {
-      retrieveEntity: jest.fn((_, __, ___, ____, f) => {
-        f(undefined, {
-          Email: anEmail,
-          FiscalCode: aFiscalCode,
-          InvalidAfter: new Date(Date.now() + 1000 * 1000).toISOString(),
-          PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-          RowKey:
-            "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
-        });
-      })
-    };
-
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
@@ -248,19 +220,6 @@ describe("ValidateProfileEmailHandler", () => {
   });
 
   it("should validate the email in profile if all the condition are verified", async () => {
-    const tableServiceMock = {
-      retrieveEntity: jest.fn((_, __, ___, ____, f) => {
-        f(undefined, {
-          Email: anEmail,
-          FiscalCode: aFiscalCode,
-          InvalidAfter: new Date(Date.now() + 1000 * 1000).toISOString(),
-          PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-          RowKey:
-            "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
-        });
-      })
-    };
-
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
