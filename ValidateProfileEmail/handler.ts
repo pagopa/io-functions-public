@@ -59,9 +59,14 @@ export enum ValidationErrors {
 /**
  * Returns a ValidUrl that represents a successful validation
  */
-const validationSuccessUrl = (validationCallbackUrl: ValidUrl): ValidUrl =>
+const validationSuccessUrl = (
+  validationCallbackUrl: ValidUrl,
+  timeStampGenerator: () => number
+): ValidUrl =>
   ({
-    href: `${validationCallbackUrl.href}?result=success&time=${Date.now()}`
+    href: `${
+      validationCallbackUrl.href
+    }?result=success&time=${timeStampGenerator()}`
   } as ValidUrl);
 
 /**
@@ -167,25 +172,6 @@ export const ValidateProfileEmailHandler = (
     );
   }
 
-  // Check if the e-mail is already taken
-  if (FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED(fiscalCode)) {
-    try {
-      const isEmailTaken = await isEmailAlreadyTaken(email)({
-        profileEmails
-      });
-      if (isEmailTaken) {
-        return ResponseSeeOtherRedirect(
-          vFailureUrl(ValidationErrors.EMAIL_ALREADY_TAKEN)
-        );
-      }
-    } catch {
-      context.log.error(`${logPrefix}| Check for e-mail uniqueness failed`);
-      return ResponseSeeOtherRedirect(
-        vFailureUrl(ValidationErrors.GENERIC_ERROR)
-      );
-    }
-  }
-
   // STEP 2: Find the profile
   const errorOrMaybeExistingProfile = await profileModel.findLastVersionByModelId(
     [fiscalCode]
@@ -218,6 +204,25 @@ export const ValidateProfileEmailHandler = (
     );
   }
 
+  // Check if the e-mail is already taken
+  if (FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED(fiscalCode)) {
+    try {
+      const isEmailTaken = await isEmailAlreadyTaken(email)({
+        profileEmails
+      });
+      if (isEmailTaken) {
+        return ResponseSeeOtherRedirect(
+          vFailureUrl(ValidationErrors.EMAIL_ALREADY_TAKEN)
+        );
+      }
+    } catch {
+      context.log.error(`${logPrefix}| Check for e-mail uniqueness failed`);
+      return ResponseSeeOtherRedirect(
+        vFailureUrl(ValidationErrors.GENERIC_ERROR)
+      );
+    }
+  }
+
   // Update the profile and set isEmailValidated to `true`
   const errorOrUpdatedProfile = await profileModel.update({
     ...existingProfile,
@@ -234,7 +239,9 @@ export const ValidateProfileEmailHandler = (
   }
 
   context.log.verbose(`${logPrefix}|The profile has been updated`);
-  return ResponseSeeOtherRedirect(validationSuccessUrl(validationCallbackUrl));
+  return ResponseSeeOtherRedirect(
+    validationSuccessUrl(validationCallbackUrl, timeStampGenerator)
+  );
 };
 
 /**
