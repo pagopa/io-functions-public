@@ -57,7 +57,7 @@ const mockRetrieveEntity = jest
     f(undefined, {
       Email: anEmail,
       FiscalCode: aFiscalCode,
-      InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
+      InvalidAfter: new Date(Date.now() + 1000 * 1000).toISOString(),
       PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
       RowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
     });
@@ -144,6 +144,16 @@ describe("ValidateProfileEmailHandler", () => {
   });
 
   it("should return a redirect with a TOKEN_EXPIRED error in case the token is expired", async () => {
+    mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
+      f(undefined, {
+        Email: anEmail,
+        FiscalCode: aFiscalCode,
+        InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
+        PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
+        RowKey:
+          "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
+      });
+    });
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
