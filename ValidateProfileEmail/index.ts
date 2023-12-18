@@ -20,7 +20,12 @@ import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middl
 
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 
+import { DataTableProfileEmailsRepository } from "@pagopa/io-functions-commons/dist/src/utils/unique_email_enforcement/storage";
 import { getConfigOrThrow } from "../utils/config";
+import {
+  profileEmailTableClient,
+  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
+} from "../utils/unique_email_enforcement";
 import { ValidateProfileEmail } from "./handler";
 
 const config = getConfigOrThrow();
@@ -50,6 +55,10 @@ const profilesContainer = cosmosClient
 
 const profileModel = new ProfileModel(profilesContainer);
 
+const profileEmailsReader = new DataTableProfileEmailsRepository(
+  profileEmailTableClient
+);
+
 app.get(
   "/validate-profile-email",
   ValidateProfileEmail(
@@ -57,7 +66,9 @@ app.get(
     VALIDATION_TOKEN_TABLE_NAME,
     profileModel,
     validationCallbackValidUrl,
-    Date.now
+    Date.now,
+    profileEmailsReader,
+    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
   )
 );
 

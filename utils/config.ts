@@ -5,24 +5,49 @@
  * The configuration is evaluate eagerly at the first access to the module. The module exposes convenient methods to access such value.
  */
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+
+import { withFallback, JsonArray } from "io-ts-types";
+
+import {
+  FeatureFlag,
+  FeatureFlagEnum
+} from "@pagopa/ts-commons/lib/featureFlag";
+
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as E from "fp-ts/lib/Either";
 
-// global app configuration
-export type IConfig = t.TypeOf<typeof IConfig>;
-export const IConfig = t.interface({
+export const BetaUsers = t.readonlyArray(FiscalCode);
+export type BetaUsers = t.TypeOf<typeof BetaUsers>;
+
+export const BetaUsersFromString = withFallback(JsonArray, []).pipe(BetaUsers);
+
+export const FeatureFlagFromString = withFallback(
+  FeatureFlag,
+  FeatureFlagEnum.NONE
+);
+
+export const IConfig = t.type({
   COSMOSDB_KEY: NonEmptyString,
   COSMOSDB_NAME: NonEmptyString,
   COSMOSDB_URI: NonEmptyString,
 
+  FF_UNIQUE_EMAIL_ENFORCEMENT: FeatureFlagFromString,
+
+  PROFILE_EMAIL_STORAGE_CONNECTION_STRING: NonEmptyString,
+  PROFILE_EMAIL_STORAGE_TABLE_NAME: NonEmptyString,
+
   StorageConnection: NonEmptyString,
 
+  UNIQUE_EMAIL_ENFORCEMENT_USERS: BetaUsersFromString,
   VALIDATION_CALLBACK_URL: NonEmptyString,
 
   isProduction: t.boolean
 });
+
+// global app configuration
+export type IConfig = t.TypeOf<typeof IConfig>;
 
 // No need to re-evaluate this object for each call
 const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
