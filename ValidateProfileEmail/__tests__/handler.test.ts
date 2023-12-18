@@ -86,96 +86,50 @@ const profileEmailReader: IProfileEmailReader = {
   list: generateProfileEmails(0)
 };
 
+const expiredTokenEntity = {
+  Email: anEmail,
+  FiscalCode: aFiscalCode,
+  InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
+  PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
+  RowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
+};
+
 describe("ValidateProfileEmailHandler", () => {
-  it("should return a redirect with a GENERIC_ERROR in case the query versus the table storage fails", async () => {
-    mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
-      f(new Error());
-    });
-
-    const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
-      mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
-      profileEmailReader,
-      constTrue
-    );
-
-    const response = await verifyProfileEmailHandler(
-      contextMock as any,
-      VALIDATION_TOKEN
-    );
-
-    expect(response.kind).toBe("IResponseSeeOtherRedirect");
-    expect(response.detail).toBe(
-      errorUrl("GENERIC_ERROR", timestampGeneratorMock)
-    );
-    expect(mockFindLastVersionByModelId).not.toBeCalled();
-    expect(mockUpdate).not.toBeCalled();
-  });
-
-  it("should return a redirect with a INVALID_TOKEN error in case the token if not found in the table", async () => {
-    mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
-      f({ code: ResourceNotFoundCode });
-    });
-
-    const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
-      mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
-      profileEmailReader,
-      constTrue
-    );
-
-    const response = await verifyProfileEmailHandler(
-      contextMock as any,
-      VALIDATION_TOKEN
-    );
-
-    expect(response.kind).toBe("IResponseSeeOtherRedirect");
-    expect(response.detail).toBe(
-      errorUrl("INVALID_TOKEN", timestampGeneratorMock)
-    );
-    expect(mockFindLastVersionByModelId).not.toBeCalled();
-    expect(mockUpdate).not.toBeCalled();
-  });
-
-  it("should return a redirect with a TOKEN_EXPIRED error in case the token is expired", async () => {
-    mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
-      f(undefined, {
-        Email: anEmail,
-        FiscalCode: aFiscalCode,
-        InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
-        PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-        RowKey:
-          "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
+  it.each`
+    scenario                                                             | expectedError      | callbackInputs
+    ${"GENERIC_ERROR in case the query versus the table storage fails"}  | ${"GENERIC_ERROR"} | ${[new Error()]}
+    ${"INVALID_TOKEN error in case the token if not found in the table"} | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]}
+    ${"TOKEN_EXPIRED error in case the token is expired"}                | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}
+  `(
+    "should return a redirect with a $scenario",
+    async ({ callbackInputs, expectedError }) => {
+      mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
+        f(...callbackInputs);
       });
-    });
-    const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
-      mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
-      profileEmailReader,
-      constTrue
-    );
 
-    const response = await verifyProfileEmailHandler(
-      contextMock as any,
-      VALIDATION_TOKEN
-    );
+      const verifyProfileEmailHandler = ValidateProfileEmailHandler(
+        tableServiceMock as any,
+        "",
+        mockProfileModel,
+        validationCallbackUrl as any,
+        timestampGeneratorMock,
+        profileEmailReader,
+        constTrue
+      );
 
-    expect(response.kind).toBe("IResponseSeeOtherRedirect");
-    expect(response.detail).toBe(
-      errorUrl("TOKEN_EXPIRED", timestampGeneratorMock)
-    );
-    expect(mockFindLastVersionByModelId).not.toBeCalled();
-    expect(mockUpdate).not.toBeCalled();
-  });
+      const response = await verifyProfileEmailHandler(
+        contextMock as any,
+        VALIDATION_TOKEN
+      );
+
+      expect(response.kind).toBe("IResponseSeeOtherRedirect");
+      expect(response.detail).toBe(
+        errorUrl(expectedError, timestampGeneratorMock)
+      );
+      expect(mockFindLastVersionByModelId).not.toBeCalled();
+      expect(mockUpdate).not.toBeCalled();
+    }
+  );
 
   it("when a citizen changes e-mail it should return IResponseErrorPreconditionFailed if the e-mail is already taken (unique email enforcement = %uee)", async () => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
