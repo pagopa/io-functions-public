@@ -7,7 +7,7 @@
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
-import { withFallback, JsonArray } from "io-ts-types";
+import { withFallback, JsonFromString } from "io-ts-types";
 
 import {
   FeatureFlag,
@@ -21,7 +21,10 @@ import * as E from "fp-ts/lib/Either";
 export const BetaUsers = t.readonlyArray(FiscalCode);
 export type BetaUsers = t.TypeOf<typeof BetaUsers>;
 
-export const BetaUsersFromString = withFallback(JsonArray, []).pipe(BetaUsers);
+export const BetaUsersFromString = withFallback(
+  t.string.pipe(JsonFromString),
+  []
+).pipe(BetaUsers);
 
 export const FeatureFlagFromString = withFallback(
   FeatureFlag,
