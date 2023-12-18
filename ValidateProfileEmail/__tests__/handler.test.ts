@@ -131,7 +131,11 @@ describe("ValidateProfileEmailHandler", () => {
     }
   );
 
-  it("when a citizen changes e-mail it should return IResponseErrorPreconditionFailed if the e-mail is already taken (unique email enforcement = %uee)", async () => {
+  it.each`
+    scenario                                                                                                                                           | expectedError            | isThrowing
+    ${"should return IResponseErrorPreconditionFailed if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined}
+    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                                     | ${"GENERIC_ERROR"}       | ${true}
+  `("should $scenario", async ({ expectedError, isThrowing }) => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
@@ -139,7 +143,7 @@ describe("ValidateProfileEmailHandler", () => {
       validationCallbackUrl as any,
       timestampGeneratorMock,
       {
-        list: generateProfileEmails(1)
+        list: generateProfileEmails(1, isThrowing)
       },
       constTrue
     );
@@ -151,33 +155,7 @@ describe("ValidateProfileEmailHandler", () => {
 
     expect(response.kind).toBe("IResponseSeeOtherRedirect");
     expect(response.detail).toBe(
-      errorUrl("EMAIL_ALREADY_TAKEN", timestampGeneratorMock)
-    );
-    expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
-    expect(mockUpdate).not.toBeCalled();
-  });
-
-  it("returns 500 when the unique e-mail enforcement check fails", async () => {
-    const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
-      mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
-      {
-        list: generateProfileEmails(1, true)
-      },
-      constTrue
-    );
-
-    const response = await verifyProfileEmailHandler(
-      contextMock as any,
-      VALIDATION_TOKEN
-    );
-
-    expect(response.kind).toBe("IResponseSeeOtherRedirect");
-    expect(response.detail).toBe(
-      errorUrl("GENERIC_ERROR", timestampGeneratorMock)
+      errorUrl(expectedError, timestampGeneratorMock)
     );
     expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
     expect(mockUpdate).not.toBeCalled();
