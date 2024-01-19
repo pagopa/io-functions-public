@@ -132,9 +132,9 @@ describe("ValidateProfileEmailHandler", () => {
   );
 
   it.each`
-    scenario                                                                                                                                           | expectedError            | isThrowing
-    ${"should return IResponseErrorPreconditionFailed if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined}
-    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                                     | ${"GENERIC_ERROR"}       | ${true}
+    scenario                                                                                                                                    | expectedError            | isThrowing
+    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined}
+    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                              | ${"GENERIC_ERROR"}       | ${true}
   `("should $scenario", async ({ expectedError, isThrowing }) => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
