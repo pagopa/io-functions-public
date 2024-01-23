@@ -1,0 +1,51 @@
+prefix    = "io"
+env       = "prod"
+env_short = "p"
+domain    = "io-citizen-auth"
+
+tags = {
+  CreatedBy   = "Terraform"
+  Environment = "Prod"
+  Owner       = "io"
+  Source      = "https://github.com/pagopa/io-web-profile-backend"
+  CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
+}
+
+ci_github_federations = [
+  {
+    repository = "io-functions-public"
+    subject    = "prod-ci"
+  }
+]
+
+cd_github_federations = [
+  {
+    repository = "io-functions-public"
+    subject    = "prod-cd"
+  }
+]
+
+environment_ci_roles = {
+  subscription = ["Reader"]
+  resource_groups = {
+    "terraform-state-rg" = [
+      "Reader and Data Access"
+    ],
+    "dashboards" = [
+      "Reader"
+    ]
+  }
+}
+
+environment_cd_roles = {
+  subscription = ["Reader"]
+  resource_groups = {
+    "terraform-state-rg" = [
+      "Storage Blob Data Contributor",
+      "Reader and Data Access"
+    ],
+    "dashboards" = [
+      "Contributor"
+    ]
+  }
+}
