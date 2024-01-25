@@ -1,5 +1,5 @@
-oa3_spec: api_backend.yaml
-name: opex_iobackend_api_backend
+oa3_spec: openapi/external.yaml
+name: opex_functionspublic_external
 location: West Europe
 timespan: 5m
 evaluation_frequency: 10
