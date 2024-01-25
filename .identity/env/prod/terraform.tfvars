@@ -1,7 +1,7 @@
 prefix    = "io"
 env       = "prod"
 env_short = "p"
-domain    = "io-functions-public"
+domain    = "functions-public"
 
 tags = {
   CreatedBy   = "Terraform"
