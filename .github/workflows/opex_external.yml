@@ -1,0 +1,24 @@
+name: Opex Dashboard External
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "openapi/external.yaml"
+      - ".github/workflows/opex_external.yml"
+      - ".opex/external/**"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  apply:
+    uses: ./.github/workflows/call_opex_api.yml
+    name: Apply changes to Production
+    secrets: inherit
+    with:
+      api_name: external
+      environment: opex-prod-cd

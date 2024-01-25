@@ -1,0 +1,32 @@
+name: PR - Opex Dashboard External
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+    branches:
+      - master
+    paths:
+      - "openapi/external.yaml"
+      - ".github/workflows/pr_opex_external.yml"
+      - ".github/workflows/opex_external.yml"
+      - ".opex/external/**"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    uses: ./.github/workflows/call_pr_opex_api.yml
+    name: Plan changes against Production
+    secrets: inherit
+    with:
+      api_name: external
+      environment: opex-prod-ci
