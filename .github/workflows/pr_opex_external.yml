@@ -14,12 +14,12 @@ on:
       - "openapi/external.yaml"
       - ".github/workflows/pr_opex_external.yml"
       - ".github/workflows/opex_external.yml"
-      - ".opex/external/**"
+      - ".opex/**"
 
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
