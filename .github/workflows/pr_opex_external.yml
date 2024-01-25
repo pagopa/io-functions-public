@@ -28,4 +28,5 @@ jobs:
     name: Plan changes against Production
     secrets: inherit
     with:
+      api_name: external
       environment: opex-prod-ci

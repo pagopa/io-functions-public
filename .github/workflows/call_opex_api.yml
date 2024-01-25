@@ -36,7 +36,7 @@ jobs:
         with:
           environment: prod
           api-name: ${{ env.API_NAME }}
-          config: .opex/env/prod/config.yaml
+          config: .opex/${{ env.API_NAME }}/env/prod/config.yaml
           client-id: ${{ secrets.AZURE_CLIENT_ID_CD }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
