@@ -1,31 +1,17 @@
 prefix    = "io"
 env       = "prod"
 env_short = "p"
-domain    = "io-citizen-auth"
+domain    = "io-functions-public"
 
 tags = {
   CreatedBy   = "Terraform"
   Environment = "Prod"
   Owner       = "io"
-  Source      = "https://github.com/pagopa/io-web-profile-backend"
+  Source      = "https://github.com/pagopa/io-functions-public"
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
 }
 
-ci_github_federations = [
-  {
-    repository = "io-functions-public"
-    subject    = "prod-ci"
-  }
-]
-
-cd_github_federations = [
-  {
-    repository = "io-functions-public"
-    subject    = "prod-cd"
-  }
-]
-
-environment_ci_roles = {
+opex_environment_ci_roles = {
   subscription = ["Reader"]
   resource_groups = {
     "terraform-state-rg" = [
@@ -37,7 +23,7 @@ environment_ci_roles = {
   }
 }
 
-environment_cd_roles = {
+opex_environment_cd_roles = {
   subscription = ["Reader"]
   resource_groups = {
     "terraform-state-rg" = [

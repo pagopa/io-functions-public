@@ -4,7 +4,7 @@ locals {
     repository = "io-functions-public"
   }
 
-  env_secrets = {
+  repo_secrets = {
     "AZURE_SUBSCRIPTION_ID" = data.azurerm_subscription.current.subscription_id
     "AZURE_TENANT_ID"       = data.azurerm_subscription.current.tenant_id
   }
