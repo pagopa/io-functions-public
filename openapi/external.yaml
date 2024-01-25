@@ -13,11 +13,12 @@ paths:
       operationId: validateProfileEmail
       description: Validate the email
       parameters:
-        - name: token
-          in: query
-          type: string
-          minLength: 1
+        - in: query
+          name: token
           required: true
+          schema:
+            type: integer
+            minLength: 1
       responses:
         "303":
           description: See Others
