@@ -1,0 +1,30 @@
+openapi: 3.0.1
+info:
+  version: $npm_package_version
+  title: IO Web Profile Function API
+  x-logo:
+    url: https://io.italia.it/assets/img/io-logo-blue.svg
+  description: |
+servers:
+  - url: https://api.io.pagopa.it/public
+paths:
+  /validate-profile-email:
+    get:
+      operationId: validateProfileEmail
+      description: Validate the email
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: integer
+            minLength: 1
+      responses:
+        "303":
+          description: See Others
+        "400":
+          description: Validation Failed
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
