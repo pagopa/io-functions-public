@@ -6,7 +6,6 @@ on:
       - master
     paths:
       - "openapi/external.yaml"
-      - ".github/workflows/opex_external.yml"
       - ".opex/external/**"
 
   workflow_dispatch:

@@ -18,7 +18,7 @@ jobs:
       DOCKER_IMAGE_TAG: sha256:04d8ead53c772d23b094c2a395292dc159e6f2905e1b13b5f828f31eac6eb27f
       TEMPLATE_DIR: azure-dashboard
       ARM_USE_OIDC: true
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_CI }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_CD }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     permissions:
@@ -30,14 +30,13 @@ jobs:
         id: checkout
         uses: actions/checkout@1f9a0c22da41e6ebfa534300ef656657ea2c6707
         with:
-          persist-credentials: false
           fetch-depth: 0
 
       - uses: pagopa/opex-dashboard-azure-action@v1.1.2
         with:
           environment: prod
           api-name: ${{ env.API_NAME }}
-          config: .opex/${{ env.API_NAME }}/env/prod/config.yaml
+          config: .opex/env/prod/config.yaml
           client-id: ${{ secrets.AZURE_CLIENT_ID_CD }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
