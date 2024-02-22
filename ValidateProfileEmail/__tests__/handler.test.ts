@@ -12,6 +12,7 @@ import * as TE from "fp-ts/TaskEither";
 import * as O from "fp-ts/Option";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
 import { aFiscalCode, aRetrievedProfile, anEmail } from "../__mocks__/profile";
+import { ValidUrl } from "@pagopa/ts-commons/lib/url";
 
 const VALIDATION_TOKEN = "01DPT9QAZ6N0FJX21A86FRCWB3:8c652f8566ba53bd8cf0b1b9" as TokenQueryParam;
 
@@ -36,20 +37,38 @@ const contextMock = {
 };
 
 const validationCallbackUrl = {
-  href: ""
+  href: "localhost/validation"
 };
+
+const confirmChoiceUrl = {
+  href: "localhost/confirm-choice"
+} as ValidUrl;
+
 const timestampGeneratorMock = () => 1234567890;
 
 const errorUrl = (
   error: keyof typeof ValidationErrors,
   timestampGenerator: () => number
 ) => {
-  return `?result=failure&error=${error}&time=${timestampGenerator()}`;
+  return `${
+    validationCallbackUrl.href
+  }?result=failure&error=${error}&time=${timestampGenerator()}`;
 };
 
 const successUrl = (timestampGenerator: () => number) => {
-  return `?result=success&time=${timestampGenerator()}`;
+  return `${
+    validationCallbackUrl.href
+  }?result=success&time=${timestampGenerator()}`;
 };
+
+const confirmPageUrl = (
+  token: string,
+  email: EmailString,
+  timestampGenerator: () => number
+) =>
+  `${
+    confirmChoiceUrl.href
+  }?token=${token}&email=${email}&time=${timestampGenerator()}`;
 
 const mockRetrieveEntity = jest
   .fn()
@@ -95,14 +114,21 @@ const expiredTokenEntity = {
 };
 
 describe("ValidateProfileEmailHandler", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it.each`
-    scenario                                                             | expectedError      | callbackInputs
-    ${"GENERIC_ERROR in case the query versus the table storage fails"}  | ${"GENERIC_ERROR"} | ${[new Error()]}
-    ${"INVALID_TOKEN error in case the token if not found in the table"} | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]}
-    ${"TOKEN_EXPIRED error in case the token is expired"}                | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}
+    scenario                                                                                 | expectedError      | callbackInputs                      | isConfirmStep
+    ${"GENERIC_ERROR in case the query versus the table storage fails during confirm step"}  | ${"GENERIC_ERROR"} | ${[new Error()]}                    | ${true}
+    ${"GENERIC_ERROR in case the query versus the table storage fails"}                      | ${"GENERIC_ERROR"} | ${[new Error()]}                    | ${false}
+    ${"INVALID_TOKEN error in case the token if not found in the table during confirm step"} | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]} | ${true}
+    ${"INVALID_TOKEN error in case the token if not found in the table"}                     | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]} | ${false}
+    ${"TOKEN_EXPIRED error in case the token is expired during confirm step"}                | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}  | ${true}
+    ${"TOKEN_EXPIRED error in case the token is expired"}                                    | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}  | ${false}
   `(
     "should return a redirect with a $scenario",
-    async ({ callbackInputs, expectedError }) => {
+    async ({ callbackInputs, expectedError, isConfirmStep }) => {
       mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
         f(...callbackInputs);
       });
@@ -114,12 +140,14 @@ describe("ValidateProfileEmailHandler", () => {
         validationCallbackUrl as any,
         timestampGeneratorMock,
         profileEmailReader,
-        constTrue
+        constTrue,
+        confirmChoiceUrl
       );
 
       const response = await verifyProfileEmailHandler(
         contextMock as any,
-        VALIDATION_TOKEN
+        VALIDATION_TOKEN,
+        isConfirmStep ? O.some(true) : O.none
       );
 
       expect(response.kind).toBe("IResponseSeeOtherRedirect");
@@ -132,36 +160,43 @@ describe("ValidateProfileEmailHandler", () => {
   );
 
   it.each`
-    scenario                                                                                                                                    | expectedError            | isThrowing
-    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined}
-    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                              | ${"GENERIC_ERROR"}       | ${true}
-  `("should $scenario", async ({ expectedError, isThrowing }) => {
-    const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
-      mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
-      {
-        list: generateProfileEmails(1, isThrowing)
-      },
-      constTrue
-    );
+    scenario                                                                                                                                                        | expectedError            | isThrowing   | isConfirmStep
+    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail during confirm step"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined} | ${true}
+    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"}                     | ${"EMAIL_ALREADY_TAKEN"} | ${undefined} | ${false}
+    ${"return 500 WHEN the unique e-mail enforcement check fails during confirm step"}                                                                              | ${"GENERIC_ERROR"}       | ${true}      | ${true}
+    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                                                  | ${"GENERIC_ERROR"}       | ${true}      | ${false}
+  `(
+    "should $scenario",
+    async ({ expectedError, isThrowing, isConfirmStep }) => {
+      const verifyProfileEmailHandler = ValidateProfileEmailHandler(
+        tableServiceMock as any,
+        "",
+        mockProfileModel,
+        validationCallbackUrl as any,
+        timestampGeneratorMock,
+        {
+          list: generateProfileEmails(1, isThrowing)
+        },
+        constTrue,
+        confirmChoiceUrl
+      );
 
-    const response = await verifyProfileEmailHandler(
-      contextMock as any,
-      VALIDATION_TOKEN
-    );
+      const response = await verifyProfileEmailHandler(
+        contextMock as any,
+        VALIDATION_TOKEN,
+        isConfirmStep ? O.some(true) : O.none
+      );
 
-    expect(response.kind).toBe("IResponseSeeOtherRedirect");
-    expect(response.detail).toBe(
-      errorUrl(expectedError, timestampGeneratorMock)
-    );
-    expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
-    expect(mockUpdate).not.toBeCalled();
-  });
+      expect(response.kind).toBe("IResponseSeeOtherRedirect");
+      expect(response.detail).toBe(
+        errorUrl(expectedError, timestampGeneratorMock)
+      );
+      expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
+      expect(mockUpdate).not.toBeCalled();
+    }
+  );
 
-  it("should validate the email in profile if all the condition are verified", async () => {
+  it("should validate the email in profile if all the condition are verified and we are in the confirm step", async () => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
@@ -171,12 +206,14 @@ describe("ValidateProfileEmailHandler", () => {
       {
         list: generateProfileEmails(0)
       },
-      constTrue
+      constTrue,
+      confirmChoiceUrl
     );
 
     const response = await verifyProfileEmailHandler(
       contextMock as any,
-      VALIDATION_TOKEN
+      VALIDATION_TOKEN,
+      O.some(true)
     );
 
     expect(response.kind).toBe("IResponseSeeOtherRedirect");
@@ -185,5 +222,33 @@ describe("ValidateProfileEmailHandler", () => {
     expect(mockUpdate).toBeCalledWith(
       expect.objectContaining({ isEmailValidated: true })
     );
+  });
+
+  it("should NOT validate the email in profile if we are NOT in the confirm step", async () => {
+    const verifyProfileEmailHandler = ValidateProfileEmailHandler(
+      tableServiceMock as any,
+      "",
+      mockProfileModel,
+      validationCallbackUrl as any,
+      timestampGeneratorMock,
+      {
+        list: generateProfileEmails(0)
+      },
+      constTrue,
+      confirmChoiceUrl
+    );
+
+    const response = await verifyProfileEmailHandler(
+      contextMock as any,
+      VALIDATION_TOKEN,
+      O.none
+    );
+
+    expect(response.kind).toBe("IResponseSeeOtherRedirect");
+    expect(response.detail).toBe(
+      confirmPageUrl(VALIDATION_TOKEN, anEmail, timestampGeneratorMock)
+    );
+    expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 });

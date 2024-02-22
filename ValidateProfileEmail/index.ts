@@ -68,7 +68,8 @@ app.get(
     validationCallbackValidUrl,
     Date.now,
     profileEmailsReader,
-    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
+    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED,
+    config.CONFIRM_CHOICE_PAGE_URL
   )
 );
 
