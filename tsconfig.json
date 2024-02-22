@@ -9,6 +9,8 @@
     "resolveJsonModule": true
   },
   "exclude": [
-    "__mocks__"
+    "**/__mocks__",
+    "**/__tests__",
+    "node_modules"
   ]
 }
