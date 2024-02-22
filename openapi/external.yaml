@@ -17,8 +17,14 @@ paths:
           name: token
           required: true
           schema:
-            type: integer
+            type: string
             minLength: 1
+        - in: query
+          name: confirm
+          schema:
+            type: string
+            enum:
+              - true
       responses:
         "303":
           description: See Others
