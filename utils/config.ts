@@ -17,6 +17,7 @@ import {
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as E from "fp-ts/lib/Either";
+import { UrlFromString } from "@pagopa/ts-commons/lib/url";
 
 export const BetaUsers = t.readonlyArray(FiscalCode);
 export type BetaUsers = t.TypeOf<typeof BetaUsers>;
@@ -47,6 +48,7 @@ export const IConfig = t.type({
 
   UNIQUE_EMAIL_ENFORCEMENT_USERS: BetaUsersFromString,
   VALIDATION_CALLBACK_URL: NonEmptyString,
+  CONFIRM_CHOICE_PAGE_URL: UrlFromString,
 
   isProduction: t.boolean
 });
