@@ -20,11 +20,16 @@ paths:
             type: string
             minLength: 1
         - in: query
-          name: confirm
+          name: flow
+          description: |
+            CONFIRM -> verify token and on success redirect to confirm page
+            VALIDATE -> verify token and on success redirect to result page
           schema:
             type: string
             enum:
-              - true
+              - "CONFIRM"
+              - "VALIDATE"
+            default: "CONFIRM"
       responses:
         "303":
           description: See Others
