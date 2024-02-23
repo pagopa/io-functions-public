@@ -190,8 +190,8 @@ export const ValidateProfileEmailHandler = (
     }
   }
 
-  // Update the profile and set isEmailValidated to `true` only if the confirm parameter is true
-  // otherwise just redirect to confirm page with token in query param
+  // Update the profile and set isEmailValidated to `true` ONLY if the flowChoice equals to VALIDATE
+  // otherwise just redirect to confirm page with token and email(base64url encoded) in query param
   return await pipe(
     flowChoice,
     TE.fromPredicate(
