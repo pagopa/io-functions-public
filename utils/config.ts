@@ -17,6 +17,7 @@ import {
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as E from "fp-ts/lib/Either";
+import { UrlFromString } from "@pagopa/ts-commons/lib/url";
 
 export const BetaUsers = t.readonlyArray(FiscalCode);
 export type BetaUsers = t.TypeOf<typeof BetaUsers>;
@@ -34,6 +35,7 @@ export const FeatureFlagFromString = withFallback(
 export const IConfig = t.type({
   APPINSIGHTS_INSTRUMENTATIONKEY: NonEmptyString,
 
+  CONFIRM_CHOICE_PAGE_URL: UrlFromString,
   COSMOSDB_KEY: NonEmptyString,
   COSMOSDB_NAME: NonEmptyString,
   COSMOSDB_URI: NonEmptyString,
