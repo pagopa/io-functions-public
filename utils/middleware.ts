@@ -18,7 +18,7 @@ export const TokenQueryParamMiddleware = RequiredQueryParamMiddleware(
 );
 
 // CONFIRM -> verify token and on success redirect to confirm page
-// VALIDATE -> verify token and on success redirect to result page
+// VALIDATE -> verify token and on success update the user data and redirect to result page
 export enum FlowTypeEnum {
   "CONFIRM" = "CONFIRM",
   "VALIDATE" = "VALIDATE"

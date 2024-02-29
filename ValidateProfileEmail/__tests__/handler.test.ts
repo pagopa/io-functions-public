@@ -91,22 +91,26 @@ const expiredTokenEntity = {
   RowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
 };
 
-describe("ValidateProfileEmailHandler", () => {
+// Flow types:
+// CONFIRM -> verify token and on success redirect to confirm page
+// VALIDATE -> verify token and on success update the user data and redirect to result page
+describe.each`
+  isConfirmFlow
+  ${true}
+  ${false}
+`("ValidateProfileEmailHandler#Errors", ({ isConfirmFlow }) => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it.each`
-    scenario                                                                                 | expectedError      | callbackInputs                      | isConfirmFlow
-    ${"GENERIC_ERROR in case the query versus the table storage fails during confirm flow"}  | ${"GENERIC_ERROR"} | ${[new Error()]}                    | ${true}
-    ${"GENERIC_ERROR in case the query versus the table storage fails"}                      | ${"GENERIC_ERROR"} | ${[new Error()]}                    | ${false}
-    ${"INVALID_TOKEN error in case the token if not found in the table during confirm flow"} | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]} | ${true}
-    ${"INVALID_TOKEN error in case the token if not found in the table"}                     | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]} | ${false}
-    ${"TOKEN_EXPIRED error in case the token is expired during confirm flow"}                | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}  | ${true}
-    ${"TOKEN_EXPIRED error in case the token is expired"}                                    | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}  | ${false}
+    scenario                                                             | expectedError      | callbackInputs
+    ${"GENERIC_ERROR in case the query versus the table storage fails"}  | ${"GENERIC_ERROR"} | ${[new Error()]}
+    ${"INVALID_TOKEN error in case the token if not found in the table"} | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]}
+    ${"TOKEN_EXPIRED error in case the token is expired"}                | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}
   `(
     "should return a redirect with a $scenario",
-    async ({ callbackInputs, expectedError, isConfirmFlow }) => {
+    async ({ callbackInputs, expectedError }) => {
       mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
         f(...callbackInputs);
       });
@@ -136,11 +140,9 @@ describe("ValidateProfileEmailHandler", () => {
   );
 
   it.each`
-    scenario                                                                                                                                                        | expectedError            | isThrowing   | isConfirmFlow
-    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail during confirm flow"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined} | ${true}
-    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"}                     | ${"EMAIL_ALREADY_TAKEN"} | ${undefined} | ${false}
-    ${"return 500 WHEN the unique e-mail enforcement check fails during confirm flow"}                                                                              | ${"GENERIC_ERROR"}       | ${true}      | ${true}
-    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                                                  | ${"GENERIC_ERROR"}       | ${true}      | ${false}
+    scenario                                                                                                                                    | expectedError            | isThrowing
+    ${"should return IResponseSeeOtherRedirect if the e-mail is already taken (unique email enforcement = %uee) WHEN a citizen changes e-mail"} | ${"EMAIL_ALREADY_TAKEN"} | ${undefined}
+    ${"return 500 WHEN the unique e-mail enforcement check fails"}                                                                              | ${"GENERIC_ERROR"}       | ${true}
   `(
     "should $scenario",
     async ({ expectedError, isThrowing, isConfirmFlow }) => {
@@ -169,8 +171,14 @@ describe("ValidateProfileEmailHandler", () => {
       expect(mockUpdate).not.toBeCalled();
     }
   );
+});
 
-  it("should validate the email in profile if all the condition are verified and we are in the confirm flow", async () => {
+describe("ValidateProfileEmailHandler#Happy path", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should validate the email in profile if all the condition are verified during VALIDATE flow", async () => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
       tableServiceMock as any,
       "",
