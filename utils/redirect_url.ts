@@ -23,7 +23,7 @@ export const validationSuccessUrl = (
   validationCallbackUrl: ValidUrl
 ): ValidUrl =>
   ({
-    href: `${validationCallbackUrl.href}?result=success}`
+    href: `${validationCallbackUrl.href}?result=success`
   } as ValidUrl);
 
 /**
@@ -34,5 +34,5 @@ export const validationFailureUrl = (
   error: keyof typeof ValidationErrors
 ): ValidUrl =>
   ({
-    href: `${validationCallbackUrl.href}?result=failure&error=${error}}`
+    href: `${validationCallbackUrl.href}?result=failure&error=${error}`
   } as ValidUrl);
