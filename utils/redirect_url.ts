@@ -20,13 +20,10 @@ export const confirmChoicePageUrl = (
  * Returns a ValidUrl that represents a successful validation
  */
 export const validationSuccessUrl = (
-  validationCallbackUrl: ValidUrl,
-  timeStampGenerator: () => number
+  validationCallbackUrl: ValidUrl
 ): ValidUrl =>
   ({
-    href: `${
-      validationCallbackUrl.href
-    }?result=success&time=${timeStampGenerator()}`
+    href: `${validationCallbackUrl.href}?result=success}`
   } as ValidUrl);
 
 /**
@@ -34,11 +31,8 @@ export const validationSuccessUrl = (
  */
 export const validationFailureUrl = (
   validationCallbackUrl: ValidUrl,
-  error: keyof typeof ValidationErrors,
-  timeStampGenerator: () => number
+  error: keyof typeof ValidationErrors
 ): ValidUrl =>
   ({
-    href: `${
-      validationCallbackUrl.href
-    }?result=failure&error=${error}&time=${timeStampGenerator()}`
+    href: `${validationCallbackUrl.href}?result=failure&error=${error}}`
   } as ValidUrl);

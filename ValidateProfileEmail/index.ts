@@ -65,11 +65,12 @@ app.get(
     tableService,
     VALIDATION_TOKEN_TABLE_NAME,
     profileModel,
-    validationCallbackValidUrl,
-    Date.now,
+    {
+      confirmValidationUrl: config.CONFIRM_CHOICE_PAGE_URL,
+      validationCallbackUrl: validationCallbackValidUrl
+    },
     profileEmailsReader,
-    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED,
-    config.CONFIRM_CHOICE_PAGE_URL
+    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
   )
 );
 

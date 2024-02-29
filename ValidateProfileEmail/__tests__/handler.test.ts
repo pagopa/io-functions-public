@@ -9,7 +9,7 @@ import * as O from "fp-ts/Option";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
 import { aFiscalCode, aRetrievedProfile, anEmail } from "../__mocks__/profile";
 import { ValidUrl } from "@pagopa/ts-commons/lib/url";
-import { FlowChoiceEnum, TokenQueryParam } from "../../utils/middleware";
+import { FlowTypeEnum, TokenQueryParam } from "../../utils/middleware";
 import {
   confirmChoicePageUrl,
   validationFailureUrl,
@@ -42,11 +42,11 @@ const validationCallbackUrl = {
   href: "localhost/validation"
 } as ValidUrl;
 
-const confirmChoiceUrl = {
+const confirmValidationUrl = {
   href: "localhost/confirm-choice"
 } as ValidUrl;
 
-const timestampGeneratorMock = () => 1234567890;
+const emailValidationUrls = { confirmValidationUrl, validationCallbackUrl };
 
 const mockRetrieveEntity = jest
   .fn()
@@ -115,26 +115,20 @@ describe("ValidateProfileEmailHandler", () => {
         tableServiceMock as any,
         "",
         mockProfileModel,
-        validationCallbackUrl as any,
-        timestampGeneratorMock,
+        emailValidationUrls,
         profileEmailReader,
-        constTrue,
-        confirmChoiceUrl
+        constTrue
       );
 
       const response = await verifyProfileEmailHandler(
         contextMock as any,
         VALIDATION_TOKEN,
-        isConfirmFlow ? FlowChoiceEnum.CONFIRM : FlowChoiceEnum.VALIDATE
+        isConfirmFlow ? FlowTypeEnum.CONFIRM : FlowTypeEnum.VALIDATE
       );
 
       expect(response.kind).toBe("IResponseSeeOtherRedirect");
       expect(response.detail).toBe(
-        validationFailureUrl(
-          validationCallbackUrl,
-          expectedError,
-          timestampGeneratorMock
-        ).href
+        validationFailureUrl(validationCallbackUrl, expectedError).href
       );
       expect(mockFindLastVersionByModelId).not.toBeCalled();
       expect(mockUpdate).not.toBeCalled();
@@ -154,28 +148,22 @@ describe("ValidateProfileEmailHandler", () => {
         tableServiceMock as any,
         "",
         mockProfileModel,
-        validationCallbackUrl as any,
-        timestampGeneratorMock,
+        emailValidationUrls,
         {
           list: generateProfileEmails(1, isThrowing)
         },
-        constTrue,
-        confirmChoiceUrl
+        constTrue
       );
 
       const response = await verifyProfileEmailHandler(
         contextMock as any,
         VALIDATION_TOKEN,
-        isConfirmFlow ? FlowChoiceEnum.CONFIRM : FlowChoiceEnum.VALIDATE
+        isConfirmFlow ? FlowTypeEnum.CONFIRM : FlowTypeEnum.VALIDATE
       );
 
       expect(response.kind).toBe("IResponseSeeOtherRedirect");
       expect(response.detail).toBe(
-        validationFailureUrl(
-          validationCallbackUrl,
-          expectedError,
-          timestampGeneratorMock
-        ).href
+        validationFailureUrl(validationCallbackUrl, expectedError).href
       );
       expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
       expect(mockUpdate).not.toBeCalled();
@@ -187,24 +175,22 @@ describe("ValidateProfileEmailHandler", () => {
       tableServiceMock as any,
       "",
       mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
+      emailValidationUrls,
       {
         list: generateProfileEmails(0)
       },
-      constTrue,
-      confirmChoiceUrl
+      constTrue
     );
 
     const response = await verifyProfileEmailHandler(
       contextMock as any,
       VALIDATION_TOKEN,
-      FlowChoiceEnum.VALIDATE
+      FlowTypeEnum.VALIDATE
     );
 
     expect(response.kind).toBe("IResponseSeeOtherRedirect");
     expect(response.detail).toBe(
-      validationSuccessUrl(validationCallbackUrl, timestampGeneratorMock).href
+      validationSuccessUrl(validationCallbackUrl).href
     );
     expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
     expect(mockUpdate).toBeCalledWith(
@@ -217,24 +203,22 @@ describe("ValidateProfileEmailHandler", () => {
       tableServiceMock as any,
       "",
       mockProfileModel,
-      validationCallbackUrl as any,
-      timestampGeneratorMock,
+      emailValidationUrls,
       {
         list: generateProfileEmails(0)
       },
-      constTrue,
-      confirmChoiceUrl
+      constTrue
     );
 
     const response = await verifyProfileEmailHandler(
       contextMock as any,
       VALIDATION_TOKEN,
-      FlowChoiceEnum.CONFIRM
+      FlowTypeEnum.CONFIRM
     );
 
     expect(response.kind).toBe("IResponseSeeOtherRedirect");
     expect(response.detail).toBe(
-      confirmChoicePageUrl(confirmChoiceUrl, VALIDATION_TOKEN, anEmail).href
+      confirmChoicePageUrl(confirmValidationUrl, VALIDATION_TOKEN, anEmail).href
     );
     expect(mockFindLastVersionByModelId).toBeCalledWith([aFiscalCode]);
     expect(mockUpdate).not.toHaveBeenCalled();

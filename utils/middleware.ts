@@ -19,19 +19,16 @@ export const TokenQueryParamMiddleware = RequiredQueryParamMiddleware(
 
 // CONFIRM -> verify token and on success redirect to confirm page
 // VALIDATE -> verify token and on success redirect to result page
-export enum FlowChoiceEnum {
+export enum FlowTypeEnum {
   "CONFIRM" = "CONFIRM",
   "VALIDATE" = "VALIDATE"
 }
-export const FlowChoice = enumType<FlowChoiceEnum>(
-  FlowChoiceEnum,
-  "FlowChoice"
-);
-export type FlowChoice = t.TypeOf<typeof FlowChoice>;
+export const FlowType = enumType<FlowTypeEnum>(FlowTypeEnum, "FlowChoice");
+export type FlowType = t.TypeOf<typeof FlowType>;
 
 // even if the query param is optional the withDefault type is covering the absence
 // of the value on the URL
-export const ChoiceConfirmQueryParamMiddleware = RequiredQueryParamMiddleware(
+export const ConfirmEmailFlowQueryParamMiddleware = RequiredQueryParamMiddleware(
   "flow",
-  withDefault(FlowChoice, FlowChoiceEnum.CONFIRM)
+  withDefault(FlowType, FlowTypeEnum.CONFIRM)
 );

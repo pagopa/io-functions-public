@@ -34,9 +34,9 @@ import {
 } from "@pagopa/io-functions-commons/dist/src/utils/unique_email_enforcement";
 import { trackEvent } from "../utils/appinsights";
 import {
-  ChoiceConfirmQueryParamMiddleware,
-  FlowChoice,
-  FlowChoiceEnum,
+  ConfirmEmailFlowQueryParamMiddleware,
+  FlowType,
+  FlowTypeEnum,
   TokenQueryParam,
   TokenQueryParamMiddleware
 } from "../utils/middleware";
@@ -50,26 +50,28 @@ import { ValidationErrors } from "../utils/validation_errors";
 type IValidateProfileEmailHandler = (
   context: Context,
   token: TokenQueryParam,
-  flowChoice: FlowChoice
+  flowChoice: FlowType
 ) => Promise<IResponseSeeOtherRedirect | IResponseErrorValidation>;
 
 export const ValidateProfileEmailHandler = (
   tableService: TableService,
   validationTokensTableName: string,
   profileModel: ProfileModel,
-  validationCallbackUrl: ValidUrl,
-  timeStampGenerator: () => number,
+  emailValidationUrls: {
+    confirmValidationUrl: ValidUrl;
+    validationCallbackUrl: ValidUrl;
+  },
   profileEmails: IProfileEmailReader,
-  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean,
-  confirmChoiceUrl: ValidUrl
+  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
 ): IValidateProfileEmailHandler => async (
   context,
   token,
   flowChoice
 ): Promise<IResponseSeeOtherRedirect | IResponseErrorValidation> => {
   const logPrefix = `ValidateProfileEmail|TOKEN=${token}`;
+  const { validationCallbackUrl, confirmValidationUrl } = emailValidationUrls;
   const vFailureUrl = (error: keyof typeof ValidationErrors): ValidUrl =>
-    validationFailureUrl(validationCallbackUrl, error, timeStampGenerator);
+    validationFailureUrl(validationCallbackUrl, error);
 
   // STEP 1: Find and verify validation token
 
@@ -195,10 +197,10 @@ export const ValidateProfileEmailHandler = (
   return await pipe(
     flowChoice,
     TE.fromPredicate(
-      flow => flow === FlowChoiceEnum.VALIDATE,
+      flow => flow === FlowTypeEnum.VALIDATE,
       () =>
         ResponseSeeOtherRedirect(
-          confirmChoicePageUrl(confirmChoiceUrl, token, email)
+          confirmChoicePageUrl(confirmValidationUrl, token, email)
         )
     ),
     TE.chain(() =>
@@ -226,7 +228,7 @@ export const ValidateProfileEmailHandler = (
 
           context.log.verbose(`${logPrefix}|The profile has been updated`);
           return ResponseSeeOtherRedirect(
-            validationSuccessUrl(validationCallbackUrl, timeStampGenerator)
+            validationSuccessUrl(validationCallbackUrl)
           );
         })
       )
@@ -243,27 +245,26 @@ export const ValidateProfileEmail = (
   tableService: TableService,
   validationTokensTableName: string,
   profileModel: ProfileModel,
-  validationCallbackUrl: ValidUrl,
-  timeStampGenerator: () => number,
+  emailValidationUrls: {
+    confirmValidationUrl: ValidUrl;
+    validationCallbackUrl: ValidUrl;
+  },
   profileEmails: IProfileEmailReader,
-  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean,
-  confirmChoiceUrl: ValidUrl
+  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
 ): express.RequestHandler => {
   const handler = ValidateProfileEmailHandler(
     tableService,
     validationTokensTableName,
     profileModel,
-    validationCallbackUrl,
-    timeStampGenerator,
+    emailValidationUrls,
     profileEmails,
-    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED,
-    confirmChoiceUrl
+    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
   );
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     TokenQueryParamMiddleware,
-    ChoiceConfirmQueryParamMiddleware
+    ConfirmEmailFlowQueryParamMiddleware
   );
   return wrapRequestHandler(middlewaresWrap(handler));
 };
