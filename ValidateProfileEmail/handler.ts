@@ -58,8 +58,8 @@ export const ValidateProfileEmailHandler = (
   validationTokensTableName: string,
   profileModel: ProfileModel,
   emailValidationUrls: {
-    confirmValidationUrl: ValidUrl;
-    validationCallbackUrl: ValidUrl;
+    readonly confirmValidationUrl: ValidUrl;
+    readonly validationCallbackUrl: ValidUrl;
   },
   profileEmails: IProfileEmailReader,
   FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
@@ -246,8 +246,8 @@ export const ValidateProfileEmail = (
   validationTokensTableName: string,
   profileModel: ProfileModel,
   emailValidationUrls: {
-    confirmValidationUrl: ValidUrl;
-    validationCallbackUrl: ValidUrl;
+    readonly confirmValidationUrl: ValidUrl;
+    readonly validationCallbackUrl: ValidUrl;
   },
   profileEmails: IProfileEmailReader,
   FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
