@@ -2,7 +2,7 @@ import * as crypto from "crypto";
 import * as E from "fp-ts/lib/Either";
 import * as O from "fp-ts/lib/Option";
 
-import { Effect, Either, Option } from "effect";
+import { Context as EffectContext, Effect, Either, Option } from "effect";
 
 import * as express from "express";
 
@@ -56,6 +56,7 @@ import {
 } from "../utils/redirect_url";
 import { ValidationErrors } from "../utils/validation_errors";
 import { update } from "effect/Differ";
+import { Logger, LoggerLive } from "./Logger";
 
 type IValidateProfileEmailHandler = (
   context: Context,
@@ -140,9 +141,8 @@ export const ValidateProfileEmailHandler = (
         );
       }
     });
-
-  return Effect.runPromise(
-    Effect.gen(function*(_) {
+  const program = Effect.gen(function*(_) {
+    const logger = yield* _(Logger);
       const hash = yield* _(makeHash);
       const entity = yield* _(
         getTableEntity(hash),
@@ -152,7 +152,7 @@ export const ValidateProfileEmailHandler = (
 
       if (Either.isLeft(entity)) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(
+        logger.error(
           `${logPrefix}|Error searching validation token|ERROR=${entity.left.message}`
         );
         return ResponseSeeOtherRedirect(
@@ -164,7 +164,7 @@ export const ValidateProfileEmailHandler = (
 
       if (Option.isNone(maybeTokenEntity)) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(`${logPrefix}|Validation token not found`);
+        logger.error(`${logPrefix}|Validation token not found`);
         return ResponseSeeOtherRedirect(
           vFailureUrl(ValidationErrors.INVALID_TOKEN)
         );
@@ -180,7 +180,7 @@ export const ValidateProfileEmailHandler = (
 
       if (Either.isLeft(errorOrValidationTokenEntity)) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(
+        logger.error(
           `${logPrefix}|Validation token can't be decoded|ERROR=${readableReport(
             errorOrValidationTokenEntity.left
           )}`
@@ -202,7 +202,7 @@ export const ValidateProfileEmailHandler = (
       // Check if the token is expired
       if (date > invalidAfter.getTime()) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(
+        logger.error(
           `${logPrefix}|Token expired|EXPIRED_AT=${invalidAfter}`
         );
         return ResponseSeeOtherRedirect(
@@ -218,7 +218,7 @@ export const ValidateProfileEmailHandler = (
 
       if (Either.isLeft(errorOrMaybeExistingProfile)) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(
+        logger.error(
           `${logPrefix}|Error searching the profile|ERROR=${errorOrMaybeExistingProfile.left}`
         );
         return ResponseSeeOtherRedirect(
@@ -229,7 +229,7 @@ export const ValidateProfileEmailHandler = (
       const maybeExistingProfile = errorOrMaybeExistingProfile.right;
       if (Option.isNone(maybeExistingProfile)) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(`${logPrefix}|Profile not found`);
+        logger.error(`${logPrefix}|Profile not found`);
         return ResponseSeeOtherRedirect(
           vFailureUrl(ValidationErrors.GENERIC_ERROR)
         );
@@ -240,7 +240,7 @@ export const ValidateProfileEmailHandler = (
       // Check if the email in the profile is the same of the one in the validation token
       if (existingProfile.email !== email) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(`${logPrefix}|Email mismatch`);
+        logger.error(`${logPrefix}|Email mismatch`);
         return ResponseSeeOtherRedirect(
           vFailureUrl(ValidationErrors.INVALID_TOKEN)
         );
@@ -276,7 +276,7 @@ export const ValidateProfileEmailHandler = (
 
       if (Either.isLeft(errorOrUpdatedProfile)) {
         // TODO: this is a side effect, use EFFECT
-        context.log.error(
+        logger.error(
           `${logPrefix}|Error updating profile|ERROR=${errorOrUpdatedProfile.left}`
         );
         return ResponseSeeOtherRedirect(
@@ -295,14 +295,20 @@ export const ValidateProfileEmailHandler = (
             }
           });
 
-          context.log.verbose(`${logPrefix}|The profile has been updated`);
+          logger.verbose(`${logPrefix}|The profile has been updated`);
           return ResponseSeeOtherRedirect(
             validationSuccessUrl(validationCallbackUrl)
           );
         })
       );
-    })
+  });
+
+  const ctx = EffectContext.empty().pipe(
+    // Add Layer stuff instead provide the context as argument
+    EffectContext.add(Logger, LoggerLive(context))
   );
+
+  return Effect.runPromise(Effect.provide(program, ctx));
 };
 
 /**
