@@ -431,8 +431,13 @@ export const ValidateProfileEmailHandler = (
       }
 
       if (FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED(fiscalCode)) {
-        const isTaken = yield* _(isEmailTaken(email));
-        if (isTaken) {
+        const errorOrIsEmailTaken = yield* _(
+          isEmailTaken(email),
+          Effect.either
+        );
+        if (Either.isLeft(errorOrIsEmailTaken)) {
+          return errorOrIsEmailTaken.left;
+        } else if (errorOrIsEmailTaken.right) {
           return ResponseSeeOtherRedirect(
             vFailureUrl(ValidationErrors.EMAIL_ALREADY_TAKEN)
           );
