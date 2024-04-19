@@ -2,7 +2,7 @@ import * as crypto from "crypto";
 import * as E from "fp-ts/lib/Either";
 import * as O from "fp-ts/lib/Option";
 
-import { Effect, Context as EffectContext, Either, Option } from "effect";
+import { Effect, Either, Option } from "effect";
 
 import * as express from "express";
 
@@ -35,6 +35,7 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { EmailString, FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import { ValidUrl } from "@pagopa/ts-commons/lib/url";
+import { UnknownException } from "effect/Cause";
 import { trackEvent } from "../utils/appinsights";
 import {
   ConfirmEmailFlowQueryParamMiddleware,
@@ -49,7 +50,6 @@ import {
   validationSuccessUrl
 } from "../utils/redirect_url";
 import { ValidationErrors } from "../utils/validation_errors";
-import { UnknownException } from "effect/Cause";
 import { ContextLogger, buildContextLogger } from "../services/ContextLogger";
 
 type IValidateProfileEmailHandler = (
@@ -59,10 +59,22 @@ type IValidateProfileEmailHandler = (
 ) => Promise<IResponseSeeOtherRedirect | IResponseErrorValidation>;
 
 const fptsEitherToEffect = <L, R>(fpe: E.Either<L, R>): Effect.Effect<R, L> =>
-  fpe._tag === "Right" ? Effect.succeed(fpe.right) : Effect.fail(fpe.left);
+  pipe(
+    fpe,
+    E.foldW(
+      left => Effect.fail(left),
+      right => Effect.succeed(right)
+    )
+  );
 
-const fptsOptionToEffectOption = <S>(fpe: O.Option<S>): Option.Option<S> =>
-  fpe._tag === "None" ? Option.none() : Option.some(fpe.value);
+const fptsOptionToEffectOption = <S>(fpo: O.Option<S>): Option.Option<S> =>
+  pipe(
+    fpo,
+    O.fold(
+      () => Option.none(),
+      value => Option.some(value)
+    )
+  );
 
 const makeHash = (validator: string) =>
   Effect.try(() =>
