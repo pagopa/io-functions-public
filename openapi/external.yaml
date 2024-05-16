@@ -33,7 +33,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ValidateUserEmailPayload"
+              $ref: "#/components/schemas/ValidateProfileEmailPayload"
       responses:
         "204":
           description: Email successfully validated.
@@ -52,7 +52,7 @@ components:
       type: string
       pattern: "^[A-Za-z0-9]{26}:[A-Fa-f0-9]{24}$"
       example: "01DPT9QAZ6N0FJX21A86FRCWB3:8c652f8566ba53bd8cf0b1b9"
-    ValidateUserEmailPayload:
+    ValidateProfileEmailPayload:
       type: object
       properties:
         token:
