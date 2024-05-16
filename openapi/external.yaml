@@ -12,7 +12,35 @@ paths:
     get:
       operationId: validateTokenAndRedirect
       description: |
-        This method only validates the token and redirect the user to the confirm/error page.
+        DEPRECATED method. use v2 instead
+      deprecated: true
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            $ref: "#/components/schemas/ValidationToken"
+        - in: query
+          name: flow
+          description: |
+            CONFIRM -> verify token and on success redirect to confirm page
+            VALIDATE -> verify token and on success redirect to result page
+          schema:
+            type: string
+            enum:
+              - "CONFIRM"
+              - "VALIDATE"
+            default: "CONFIRM"
+      responses:
+        "303":
+          description: See Others
+        "400":
+          description: Validation Failed
+  /api/v2/validate-profile-email:
+    get:
+      operationId: getTokenInfo
+      description: |
+        Validates the token and get email relative to a token.
       parameters:
         - in: query
           name: token
@@ -20,11 +48,25 @@ paths:
           schema:
             $ref: "#/components/schemas/ValidationToken"
       responses:
-        "303":
-          description: See Others
+        "200":
+          description: Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTokenInfoResponse'
         "400":
-          description: Validation Failed
-    put:
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+    post:
       operationId: validateProfileEmail
       description: |
         Validates the token and updates the user profile.
@@ -39,6 +81,10 @@ paths:
           description: Email successfully validated.
         "400":
           description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         "500":
           description: Internal Server Error
           content:
@@ -48,6 +94,16 @@ paths:
 
 components:
   schemas:
+    ProfileEmail:
+      type: string
+      format: email
+    GetTokenInfoResponse:
+      type: object
+      properties:
+        profile_email:
+          $ref: "#/components/schemas/ProfileEmail" 
+      required:
+        - profile_email
     ValidationToken:
       type: string
       pattern: "^[A-Za-z0-9]{26}:[A-Fa-f0-9]{24}$"
