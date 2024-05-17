@@ -42,8 +42,8 @@ paths:
       description: |
         Validates the token and get email relative to a token.
       parameters:
-        - in: query
-          name: token
+        - in: header
+          name: x-pagopa-email-validation-token
           required: true
           schema:
             $ref: "#/components/schemas/ValidationToken"
@@ -60,6 +60,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        "401":
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
         "500":
           description: Internal Server Error
           content:
@@ -77,14 +83,24 @@ paths:
             schema:
               $ref: "#/components/schemas/ValidateProfileEmailPayload"
       responses:
-        "204":
-          description: Email successfully validated.
+        "200":
+          description: Status report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateProfileStatusReport'
         "400":
-          description: Validation failed
+          description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        "401":
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
         "500":
           description: Internal Server Error
           content:
@@ -94,16 +110,63 @@ paths:
 
 components:
   schemas:
+    GetTokenInfoResponse:
+      oneOf:
+        - type: object
+          properties:
+            status:
+              type: string
+              enum:
+                - SUCCESS
+            profile_email:
+              $ref: "#/components/schemas/ProfileEmail"
+          required:
+            - profile_email
+            - status
+        - $ref: "#/components/schemas/ValidationErrorsObject"
+    UnauthorizedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - FAILURE
+        reason:
+          type: string
+          enum:
+            - INVALID_TOKEN
+      required:
+        - status
+        - reason
+    ValidateProfileStatusReport:
+      oneOf:
+        - type: object
+          properties:
+            status:
+              type: string
+              enum:
+                - SUCCESS
+          required:
+            - status
+        - $ref: "#/components/schemas/ValidationErrorsObject"
+    ValidationErrorsObject:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - FAILURE
+        reason:
+          type: string
+          enum:
+            - TOKEN_EXPIRED
+            - EMAIL_ALREADY_TAKEN
+      required:
+        - status
+        - reason
     ProfileEmail:
       type: string
       format: email
-    GetTokenInfoResponse:
-      type: object
-      properties:
-        profile_email:
-          $ref: "#/components/schemas/ProfileEmail" 
-      required:
-        - profile_email
     ValidationToken:
       type: string
       pattern: "^[A-Za-z0-9]{26}:[A-Fa-f0-9]{24}$"
