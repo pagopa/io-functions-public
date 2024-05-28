@@ -32,6 +32,9 @@ paths:
               - "VALIDATE"
             default: "CONFIRM"
       responses:
+        "200":
+          description: |
+            Dummy response. This is here because of a known bug in the codegen
         "303":
           description: See Others
         "400":
