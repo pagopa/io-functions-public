@@ -92,17 +92,19 @@ const makeHash = (validator: string) =>
   );
 
 // Retrieve the entity from the table storage
-const getTableEntity = (
-  validationTokensTableName: string,
-  tableService: TableService,
-  tokenId: string
-) => (validatorHash: string) =>
-  Effect.tryPromise(() =>
-    retrieveTableEntity(
-      tableService,
-      validationTokensTableName,
-      tokenId,
-      validatorHash
+const getTableEntity = (validationTokensTableName: string, tokenId: string) => (
+  validatorHash: string
+) =>
+  TokenTable.pipe(
+    Effect.andThen(tableService =>
+      Effect.tryPromise(() =>
+        retrieveTableEntity(
+          tableService,
+          validationTokensTableName,
+          tokenId,
+          validatorHash
+        )
+      )
     )
   );
 
@@ -174,12 +176,11 @@ export const buildHandler = (
     // Split the token to get tokenId and validatorHash
     const [tokenId, validator] = token.split(":");
     const contextLogger = yield* _(ContextLogger);
-    const tableService = yield* _(TokenTable);
     const profileModelService = yield* _(ProfileModelService);
     const hash = yield* _(makeHash(validator));
 
     const entity = yield* _(
-      getTableEntity(validationTokensTableName, tableService, tokenId)(hash),
+      getTableEntity(validationTokensTableName, tokenId)(hash),
       Effect.flatMap(fptsEitherToEffect),
       Effect.either
     );
