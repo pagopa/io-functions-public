@@ -4,8 +4,11 @@ import { UnknownException } from "effect/Cause";
 
 export class Logger extends Context.Tag("Logger")<
   Logger,
-  { readonly error: (message: string) => Effect.Effect<void, UnknownException>
-    readonly verbose: (message: string) => Effect.Effect<void, UnknownException>
+  {
+    readonly error: (message: string) => Effect.Effect<void, UnknownException>;
+    readonly verbose: (
+      message: string
+    ) => Effect.Effect<void, UnknownException>;
   }
 >() {}
 
