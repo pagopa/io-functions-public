@@ -2,7 +2,7 @@ import * as crypto from "crypto";
 import * as E from "fp-ts/lib/Either";
 import * as O from "fp-ts/lib/Option";
 
-import { Effect, Either, Option } from "effect";
+import { Context as EffectContext, Effect, Either, Option } from "effect";
 
 import * as express from "express";
 
@@ -50,7 +50,14 @@ import {
   validationSuccessUrl
 } from "../utils/redirect_url";
 import { ValidationErrors } from "../utils/validation_errors";
-import { ContextLogger, buildContextLogger } from "../services/ContextLogger";
+import {
+  ContextLogger,
+  ContextLoggerType,
+  buildContextLogger
+} from "../services/ContextLogger";
+import { TokenTable } from "../services/TokenTable";
+import { ProfileModelService } from "../services/ProfileModel";
+import { ProfileEmailsReaderService } from "../services/ProfileEmailsReader";
 
 type IValidateProfileEmailHandler = (
   context: Context,
@@ -108,23 +115,19 @@ const getProfile = (profileModel: ProfileModel) => (fiscalCode: FiscalCode) =>
   );
 
 export const buildHandler = (
-  tableService: TableService,
   validationTokensTableName: string,
-  profileModel: ProfileModel,
   emailValidationUrls: {
     readonly confirmValidationUrl: ValidUrl;
     readonly validationCallbackUrl: ValidUrl;
   },
-  profileEmails: IProfileEmailReader,
   FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
 ) => (
-  context: Context,
   token: TokenQueryParam,
   flowChoice: FlowType
 ): Effect.Effect<
   IResponseSeeOtherRedirect,
   UnknownException,
-  ContextLogger
+  ContextLogger | TokenTable | ProfileModelService | ProfileEmailsReaderService
 > => {
   const logPrefix = `ValidateProfileEmail|TOKEN=${token}`;
   const { validationCallbackUrl, confirmValidationUrl } = emailValidationUrls;
@@ -137,12 +140,17 @@ export const buildHandler = (
   // Split the token to get tokenId and validatorHash
   const [tokenId, validator] = token.split(":");
 
-  const updateProfile = (profile: RetrievedProfile) =>
+  const updateProfile = (profileModel: ProfileModel) => (
+    profile: RetrievedProfile
+  ) =>
     Effect.tryPromise(() => profileModel.update(profile)()).pipe(
       Effect.flatMap(fptsEitherToEffect)
     );
 
-  const isEmailTaken = (email: EmailString) =>
+  const isEmailTaken = (
+    contextLogger: ContextLoggerType,
+    profileEmails: IProfileEmailReader
+  ) => (email: EmailString) =>
     Effect.tryPromise({
       try: () =>
         isEmailAlreadyTaken(email)({
@@ -150,7 +158,7 @@ export const buildHandler = (
         }),
       catch: () => {
         // TODO: this is a side effect
-        context.log.error(`${logPrefix}| Check for e-mail uniqueness failed`);
+        contextLogger.error(`${logPrefix}| Check for e-mail uniqueness failed`);
         return ResponseSeeOtherRedirect(
           vFailureUrl(ValidationErrors.GENERIC_ERROR)
         );
@@ -159,6 +167,9 @@ export const buildHandler = (
 
   return Effect.gen(function*(_) {
     const contextLogger = yield* _(ContextLogger);
+    const tableService = yield* _(TokenTable);
+    const profileModelService = yield* _(ProfileModelService);
+    const profileEmails = yield* _(ProfileEmailsReaderService);
     const hash = yield* _(makeHash(validator));
     const entity = yield* _(
       getTableEntity(validationTokensTableName, tableService, tokenId)(hash),
@@ -196,7 +207,7 @@ export const buildHandler = (
 
     if (Either.isLeft(errorOrValidationTokenEntity)) {
       // TODO: this is a side effect, use EFFECT
-      context.log.error(
+      contextLogger.error(
         `${logPrefix}|Validation token can't be decoded|ERROR=${readableReport(
           errorOrValidationTokenEntity.left
         )}`
@@ -218,7 +229,7 @@ export const buildHandler = (
     // Check if the token is expired
     if (date > invalidAfter.getTime()) {
       // TODO: this is a side effect, use EFFECT
-      context.log.error(
+      contextLogger.error(
         `${logPrefix}|Token expired|EXPIRED_AT=${invalidAfter}`
       );
       return ResponseSeeOtherRedirect(
@@ -228,13 +239,13 @@ export const buildHandler = (
 
     // STEP 2: Find the profile
     const errorOrMaybeExistingProfile = yield* _(
-      getProfile(profileModel)(fiscalCode),
+      getProfile(profileModelService)(fiscalCode),
       Effect.either
     );
 
     if (Either.isLeft(errorOrMaybeExistingProfile)) {
       // TODO: this is a side effect, use EFFECT
-      context.log.error(
+      contextLogger.error(
         `${logPrefix}|Error searching the profile|ERROR=${errorOrMaybeExistingProfile.left}`
       );
       return ResponseSeeOtherRedirect(
@@ -245,7 +256,7 @@ export const buildHandler = (
     const maybeExistingProfile = errorOrMaybeExistingProfile.right;
     if (Option.isNone(maybeExistingProfile)) {
       // TODO: this is a side effect, use EFFECT
-      context.log.error(`${logPrefix}|Profile not found`);
+      contextLogger.error(`${logPrefix}|Profile not found`);
       return ResponseSeeOtherRedirect(
         vFailureUrl(ValidationErrors.GENERIC_ERROR)
       );
@@ -256,14 +267,17 @@ export const buildHandler = (
     // Check if the email in the profile is the same of the one in the validation token
     if (existingProfile.email !== email) {
       // TODO: this is a side effect, use EFFECT
-      context.log.error(`${logPrefix}|Email mismatch`);
+      contextLogger.error(`${logPrefix}|Email mismatch`);
       return ResponseSeeOtherRedirect(
         vFailureUrl(ValidationErrors.INVALID_TOKEN)
       );
     }
 
     if (FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED(fiscalCode)) {
-      const errorOrIsEmailTaken = yield* _(isEmailTaken(email), Effect.either);
+      const errorOrIsEmailTaken = yield* _(
+        isEmailTaken(contextLogger, profileEmails)(email),
+        Effect.either
+      );
       if (Either.isLeft(errorOrIsEmailTaken)) {
         return errorOrIsEmailTaken.left;
       } else if (errorOrIsEmailTaken.right) {
@@ -283,13 +297,16 @@ export const buildHandler = (
     }
 
     const errorOrUpdatedProfile = yield* _(
-      updateProfile({ ...existingProfile, isEmailValidated: true }),
+      updateProfile(profileModelService)({
+        ...existingProfile,
+        isEmailValidated: true
+      }),
       Effect.either
     );
 
     if (Either.isLeft(errorOrUpdatedProfile)) {
       // TODO: this is a side effect, use EFFECT
-      context.log.error(
+      contextLogger.error(
         `${logPrefix}|Error updating profile|ERROR=${errorOrUpdatedProfile.left}`
       );
       return ResponseSeeOtherRedirect(
@@ -308,7 +325,7 @@ export const buildHandler = (
           }
         });
 
-        context.log.verbose(`${logPrefix}|The profile has been updated`);
+        contextLogger.verbose(`${logPrefix}|The profile has been updated`);
         return ResponseSeeOtherRedirect(
           validationSuccessUrl(validationCallbackUrl)
         );
@@ -328,28 +345,28 @@ export const ValidateProfileEmailHandler = (
   profileEmails: IProfileEmailReader,
   FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
 ): IValidateProfileEmailHandler => async (
-  context,
+  _context,
   token,
   flowChoice
 ): Promise<IResponseSeeOtherRedirect | IResponseErrorValidation> => {
   // get main Effect
   const mainEffect = buildHandler(
-    tableService,
     validationTokensTableName,
-    profileModel,
     emailValidationUrls,
-    profileEmails,
     FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
-  )(context, token, flowChoice);
+  )(token, flowChoice);
 
   // createContext
-  const contextLogger = buildContextLogger(context);
+  const contextLogger = buildContextLogger(_context);
 
-  const runnable = Effect.provideService(
-    mainEffect,
-    ContextLogger,
-    contextLogger
+  const context = EffectContext.empty().pipe(
+    EffectContext.add(ContextLogger, contextLogger),
+    EffectContext.add(TokenTable, tableService),
+    EffectContext.add(ProfileModelService, profileModel),
+    EffectContext.add(ProfileEmailsReaderService, profileEmails)
   );
+
+  const runnable = Effect.provide(mainEffect, context);
 
   return await Effect.runPromise(runnable);
 };

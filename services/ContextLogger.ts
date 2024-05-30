@@ -5,6 +5,7 @@ import { UnknownException } from "effect/Cause";
 export interface ContextLoggerType {
   readonly info: (message: string) => Effect.Effect<void, UnknownException>;
   readonly error: (message: string) => Effect.Effect<void, UnknownException>;
+  readonly verbose: (message: string) => Effect.Effect<void, UnknownException>;
 }
 
 export class ContextLogger extends EffectContext.Tag("ContextLogger")<
@@ -15,5 +16,6 @@ export class ContextLogger extends EffectContext.Tag("ContextLogger")<
 // Implementation
 export const buildContextLogger = (context: AzureFunctionContext) => ({
   info: (message: string) => Effect.try(() => context.log.info(message)),
-  error: (message: string) => Effect.try(() => context.log.error(message))
+  error: (message: string) => Effect.try(() => context.log.error(message)),
+  verbose: (message: string) => Effect.try(() => context.log.verbose(message))
 });
