@@ -2,7 +2,7 @@ import * as crypto from "crypto";
 import * as E from "fp-ts/lib/Either";
 import * as O from "fp-ts/lib/Option";
 
-import { Context as EffectContext, Effect, Either, Option } from "effect";
+import { Effect, Context as EffectContext, Either, Option } from "effect";
 
 import * as express from "express";
 
@@ -36,6 +36,14 @@ import {
 import { EmailString, FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import { ValidUrl } from "@pagopa/ts-commons/lib/url";
 import { UnknownException } from "effect/Cause";
+import {
+  ContextLogger,
+  ContextLoggerType,
+  buildContextLogger
+} from "../services/ContextLogger";
+import { ProfileEmailsReaderService } from "../services/ProfileEmailsReader";
+import { ProfileModelService } from "../services/ProfileModel";
+import { TokenTable } from "../services/TokenTable";
 import { trackEvent } from "../utils/appinsights";
 import {
   ConfirmEmailFlowQueryParamMiddleware,
@@ -50,14 +58,6 @@ import {
   validationSuccessUrl
 } from "../utils/redirect_url";
 import { ValidationErrors } from "../utils/validation_errors";
-import {
-  ContextLogger,
-  ContextLoggerType,
-  buildContextLogger
-} from "../services/ContextLogger";
-import { TokenTable } from "../services/TokenTable";
-import { ProfileModelService } from "../services/ProfileModel";
-import { ProfileEmailsReaderService } from "../services/ProfileEmailsReader";
 
 type IValidateProfileEmailHandler = (
   context: Context,
@@ -114,12 +114,50 @@ const getProfile = (profileModel: ProfileModel) => (fiscalCode: FiscalCode) =>
     Effect.map(fptsOptionToEffectOption)
   );
 
+const isEmailTaken = (
+  logPrefix: string,
+  email: EmailString,
+  vFailureUrl: (error: keyof typeof ValidationErrors) => ValidUrl
+) =>
+  Effect.all([ContextLogger, ProfileEmailsReaderService]).pipe(
+    Effect.andThen(([contextLogger, profileEmails]) =>
+      Effect.tryPromise({
+        try: () =>
+          isEmailAlreadyTaken(email)({
+            profileEmails
+          }),
+        catch: () => {
+          contextLogger.error(
+            `${logPrefix}| Check for e-mail uniqueness failed`
+          );
+          return ResponseSeeOtherRedirect(
+            vFailureUrl(ValidationErrors.GENERIC_ERROR)
+          );
+        }
+      })
+    )
+  );
+
+const updateProfile = (profile: RetrievedProfile) =>
+  ProfileModelService.pipe(
+    Effect.andThen(profileModelService =>
+      Effect.tryPromise(() => profileModelService.update(profile)()).pipe(
+        Effect.flatMap(fptsEitherToEffect)
+      )
+    )
+  );
+
 export const buildHandler = (
   validationTokensTableName: string,
-  emailValidationUrls: {
+  {
+    validationCallbackUrl,
+    confirmValidationUrl
+  }: {
     readonly confirmValidationUrl: ValidUrl;
     readonly validationCallbackUrl: ValidUrl;
   },
+  logPrefix: string,
+  vFailureUrl: (error: keyof typeof ValidationErrors) => ValidUrl,
   FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
 ) => (
   token: TokenQueryParam,
@@ -128,49 +166,18 @@ export const buildHandler = (
   IResponseSeeOtherRedirect,
   UnknownException,
   ContextLogger | TokenTable | ProfileModelService | ProfileEmailsReaderService
-> => {
-  const logPrefix = `ValidateProfileEmail|TOKEN=${token}`;
-  const { validationCallbackUrl, confirmValidationUrl } = emailValidationUrls;
-  const vFailureUrl = (error: keyof typeof ValidationErrors): ValidUrl =>
-    validationFailureUrl(validationCallbackUrl, error);
-
-  // STEP 1: Find and verify validation token
-  // A token is in the following format:
-  // [tokenId ULID] + ":" + [validatorHash crypto.randomBytes(12)]
-  // Split the token to get tokenId and validatorHash
-  const [tokenId, validator] = token.split(":");
-
-  const updateProfile = (profileModel: ProfileModel) => (
-    profile: RetrievedProfile
-  ) =>
-    Effect.tryPromise(() => profileModel.update(profile)()).pipe(
-      Effect.flatMap(fptsEitherToEffect)
-    );
-
-  const isEmailTaken = (
-    contextLogger: ContextLoggerType,
-    profileEmails: IProfileEmailReader
-  ) => (email: EmailString) =>
-    Effect.tryPromise({
-      try: () =>
-        isEmailAlreadyTaken(email)({
-          profileEmails
-        }),
-      catch: () => {
-        // TODO: this is a side effect
-        contextLogger.error(`${logPrefix}| Check for e-mail uniqueness failed`);
-        return ResponseSeeOtherRedirect(
-          vFailureUrl(ValidationErrors.GENERIC_ERROR)
-        );
-      }
-    });
-
-  return Effect.gen(function*(_) {
+> =>
+  Effect.gen(function*(_) {
+    // STEP 1: Find and verify validation token
+    // A token is in the following format:
+    // [tokenId ULID] + ":" + [validatorHash crypto.randomBytes(12)]
+    // Split the token to get tokenId and validatorHash
+    const [tokenId, validator] = token.split(":");
     const contextLogger = yield* _(ContextLogger);
     const tableService = yield* _(TokenTable);
     const profileModelService = yield* _(ProfileModelService);
-    const profileEmails = yield* _(ProfileEmailsReaderService);
     const hash = yield* _(makeHash(validator));
+
     const entity = yield* _(
       getTableEntity(validationTokensTableName, tableService, tokenId)(hash),
       Effect.flatMap(fptsEitherToEffect),
@@ -275,7 +282,7 @@ export const buildHandler = (
 
     if (FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED(fiscalCode)) {
       const errorOrIsEmailTaken = yield* _(
-        isEmailTaken(contextLogger, profileEmails)(email),
+        isEmailTaken(logPrefix, email, vFailureUrl),
         Effect.either
       );
       if (Either.isLeft(errorOrIsEmailTaken)) {
@@ -297,7 +304,7 @@ export const buildHandler = (
     }
 
     const errorOrUpdatedProfile = yield* _(
-      updateProfile(profileModelService)({
+      updateProfile({
         ...existingProfile,
         isEmailValidated: true
       }),
@@ -332,7 +339,6 @@ export const buildHandler = (
       })
     );
   });
-};
 
 export const ValidateProfileEmailHandler = (
   tableService: TableService,
@@ -349,10 +355,16 @@ export const ValidateProfileEmailHandler = (
   token,
   flowChoice
 ): Promise<IResponseSeeOtherRedirect | IResponseErrorValidation> => {
+  const logPrefix = `ValidateProfileEmail|TOKEN=${token}`;
+  const vFailureUrl = (error: keyof typeof ValidationErrors): ValidUrl =>
+    validationFailureUrl(emailValidationUrls.validationCallbackUrl, error);
+
   // get main Effect
   const mainEffect = buildHandler(
     validationTokensTableName,
     emailValidationUrls,
+    logPrefix,
+    vFailureUrl,
     FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
   )(token, flowChoice);
 
