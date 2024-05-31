@@ -104,12 +104,16 @@ const getTableEntity = (validationTokensTableName: string, tokenId: string) => (
     )
   );
 
-const getProfile = (profileModel: ProfileModel) => (fiscalCode: FiscalCode) =>
-  Effect.tryPromise(() =>
-    profileModel.findLastVersionByModelId([fiscalCode])()
-  ).pipe(
-    Effect.flatMap(fptsEitherToEffect),
-    Effect.map(fptsOptionToEffectOption)
+const getProfile = (fiscalCode: FiscalCode) =>
+  ProfileModelService.pipe(
+    Effect.andThen(profileModel =>
+      Effect.tryPromise(() =>
+        profileModel.findLastVersionByModelId([fiscalCode])()
+      ).pipe(
+        Effect.flatMap(fptsEitherToEffect),
+        Effect.map(fptsOptionToEffectOption)
+      )
+    )
   );
 
 const isEmailTaken = (
@@ -172,7 +176,6 @@ export const buildHandler = (
     // Split the token to get tokenId and validatorHash
     const [tokenId, validator] = token.split(":");
     const contextLogger = yield* _(ContextLogger);
-    const profileModelService = yield* _(ProfileModelService);
     const hash = yield* _(makeHash(validator));
 
     const entity = yield* _(
@@ -243,7 +246,7 @@ export const buildHandler = (
 
     // STEP 2: Find the profile
     const errorOrMaybeExistingProfile = yield* _(
-      getProfile(profileModelService)(fiscalCode),
+      getProfile(fiscalCode),
       Effect.either
     );
 
