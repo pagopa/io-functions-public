@@ -3,7 +3,7 @@ import {
   RetrievedProfile
 } from "@pagopa/io-functions-commons/dist/src/models/profile";
 import { EmailString, FiscalCode } from "@pagopa/ts-commons/lib/strings";
-import { Effect, Context, Option } from "effect";
+import { Effect, Context, Option, pipe } from "effect";
 import { CosmosErrors } from "@pagopa/io-functions-commons/dist/src/utils/cosmosdb_model";
 import { UnknownException } from "effect/Cause";
 import {
@@ -37,14 +37,16 @@ export const ProfileLive = (
   profileEmails: IProfileEmailReader
 ): ProfileService => ({
   get: fiscalCode =>
-    Effect.tryPromise(() =>
-      profileModel.findLastVersionByModelId([fiscalCode])()
-    ).pipe(
+    pipe(
+      Effect.tryPromise(() =>
+        profileModel.findLastVersionByModelId([fiscalCode])()
+      ),
       Effect.flatMap(fptsEitherToEffect),
       Effect.map(fptsOptionToEffectOption)
     ),
   update: profile =>
-    Effect.tryPromise(() => profileModel.update(profile)()).pipe(
+    pipe(
+      Effect.tryPromise(() => profileModel.update(profile)()),
       Effect.flatMap(fptsEitherToEffect)
     ),
   checkIfEmailIsTaken: email =>

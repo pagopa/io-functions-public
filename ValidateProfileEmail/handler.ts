@@ -26,7 +26,7 @@ import {
 } from "../utils/middleware";
 import { Logger, LoggerLive } from "./services/Logger";
 import { Profile, ProfileLive } from "./services/Profile";
-import { TokenTable, TokenTableLive } from "./services/TokenEntity";
+import { TokenTable, TokenTableLive } from "./services/TokenTable";
 import { validateProfileEmail } from "./program";
 
 type IValidateProfileEmailHandler = (

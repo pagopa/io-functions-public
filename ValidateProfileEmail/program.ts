@@ -15,7 +15,7 @@ import { FlowType, FlowTypeEnum, TokenQueryParam } from "../utils/middleware";
 import { trackEvent } from "../utils/appinsights";
 import { Logger } from "./services/Logger";
 import { Profile } from "./services/Profile";
-import { TokenTable } from "./services/TokenEntity";
+import { TokenTable } from "./services/TokenTable";
 import { fptsEitherToEffect, fptsOptionToEffectOption } from "./transformers";
 
 export const validateProfileEmail = (
