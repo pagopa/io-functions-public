@@ -18,6 +18,12 @@ module.exports = {
   },
   extends: ["@pagopa/eslint-config/strong"],
   rules: {
-    "max-params": "off"
+    "max-params": "off",
+    //TODO: remove this overrides
+    "max-lines-per-function": "off",
+    "sort-keys": "off",
+    "sonarjs/cognitive-complexity": "off",
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/explicit-function-return-type": "off"
   }
 };
