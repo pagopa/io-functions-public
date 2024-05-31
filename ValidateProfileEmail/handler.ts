@@ -36,11 +36,7 @@ import {
 import { EmailString, FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import { ValidUrl } from "@pagopa/ts-commons/lib/url";
 import { UnknownException } from "effect/Cause";
-import {
-  ContextLogger,
-  ContextLoggerType,
-  buildContextLogger
-} from "../services/ContextLogger";
+import { ContextLogger, buildContextLogger } from "../services/ContextLogger";
 import { ProfileEmailsReaderService } from "../services/ProfileEmailsReader";
 import { ProfileModelService } from "../services/ProfileModel";
 import { TokenTable } from "../services/TokenTable";
