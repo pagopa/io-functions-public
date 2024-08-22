@@ -40,7 +40,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
-        working-directory: .
 
       - name: Build
         run: yarn build

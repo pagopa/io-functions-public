@@ -11,6 +11,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint . -c .eslintrc.js --ext .ts,.tsx",
+    "generate": "npm-run-all generate:* generate:templates:*",
     "dist:modules": "modclean -r -n default:safe && yarn install --production",
     "predeploy": "npm-run-all build dist:modules",
     "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",
