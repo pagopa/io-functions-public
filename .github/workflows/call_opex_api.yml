@@ -18,9 +18,9 @@ jobs:
       DOCKER_IMAGE_TAG: sha256:04d8ead53c772d23b094c2a395292dc159e6f2905e1b13b5f828f31eac6eb27f
       TEMPLATE_DIR: azure-dashboard
       ARM_USE_OIDC: true
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_CD }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     permissions:
       id-token: write
       contents: read
@@ -37,7 +37,7 @@ jobs:
           environment: prod
           api-name: ${{ env.API_NAME }}
           config: .opex/${{ env.API_NAME }}/env/prod/config.yaml
-          client-id: ${{ secrets.AZURE_CLIENT_ID_CD }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           docker-version: ${{ env.DOCKER_IMAGE_TAG }}
