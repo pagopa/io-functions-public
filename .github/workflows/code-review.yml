@@ -44,9 +44,6 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      # - name: Generate models
-      #   run: yarn generate
-
       - name: Unit tests exec
         run: yarn test:coverage
 
