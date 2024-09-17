@@ -34,5 +34,5 @@ locals {
     }
     reviewers_teams = ["io-backend-contributors", "io-backend-admin", "engineering-team-cloud-eng"]
   }
-  
+
 }

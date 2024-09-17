@@ -76,3 +76,33 @@ module "federated_identities_opex" {
 
   tags = local.tags
 }
+
+module "roles_ci" {
+  source       = "github.com/pagopa/dx//infra/modules/azure_role_assignments?ref=main"
+  principal_id = module.federated_identities.federated_ci_identity.id
+
+  key_vault = [
+    {
+      name                = "io-p-kv-common"
+      resource_group_name = "io-p-rg-common"
+      roles = {
+        secrets = "reader"
+      }
+    }
+  ]
+}
+
+module "roles_cd" {
+  source       = "github.com/pagopa/dx//infra/modules/azure_role_assignments?ref=main"
+  principal_id = module.federated_identities.federated_cd_identity.id
+
+  key_vault = [
+    {
+      name                = "io-p-kv-common"
+      resource_group_name = "io-p-rg-common"
+      roles = {
+        secrets = "reader"
+      }
+    }
+  ]
+}
