@@ -45,7 +45,6 @@ export const IConfig = t.type({
 
   StorageConnection: NonEmptyString,
 
-  UNIQUE_EMAIL_ENFORCEMENT_USERS: BetaUsersFromString,
   VALIDATION_CALLBACK_URL: NonEmptyString,
 
   isProduction: t.boolean
