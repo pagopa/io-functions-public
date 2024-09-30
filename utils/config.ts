@@ -40,14 +40,11 @@ export const IConfig = t.type({
   COSMOSDB_NAME: NonEmptyString,
   COSMOSDB_URI: NonEmptyString,
 
-  FF_UNIQUE_EMAIL_ENFORCEMENT: FeatureFlagFromString,
-
   PROFILE_EMAIL_STORAGE_CONNECTION_STRING: NonEmptyString,
   PROFILE_EMAIL_STORAGE_TABLE_NAME: NonEmptyString,
 
   StorageConnection: NonEmptyString,
 
-  UNIQUE_EMAIL_ENFORCEMENT_USERS: BetaUsersFromString,
   VALIDATION_CALLBACK_URL: NonEmptyString,
 
   isProduction: t.boolean

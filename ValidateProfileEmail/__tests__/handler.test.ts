@@ -120,8 +120,7 @@ describe.each`
         "",
         mockProfileModel,
         emailValidationUrls,
-        profileEmailReader,
-        constTrue
+        profileEmailReader
       );
 
       const response = await verifyProfileEmailHandler(
@@ -153,8 +152,7 @@ describe.each`
         emailValidationUrls,
         {
           list: generateProfileEmails(1, isThrowing)
-        },
-        constTrue
+        }
       );
 
       const response = await verifyProfileEmailHandler(
@@ -186,8 +184,7 @@ describe("ValidateProfileEmailHandler#Happy path", () => {
       emailValidationUrls,
       {
         list: generateProfileEmails(0)
-      },
-      constTrue
+      }
     );
 
     const response = await verifyProfileEmailHandler(
@@ -214,8 +211,7 @@ describe("ValidateProfileEmailHandler#Happy path", () => {
       emailValidationUrls,
       {
         list: generateProfileEmails(0)
-      },
-      constTrue
+      }
     );
 
     const response = await verifyProfileEmailHandler(

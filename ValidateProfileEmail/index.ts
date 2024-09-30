@@ -22,10 +22,7 @@ import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src
 
 import { DataTableProfileEmailsRepository } from "@pagopa/io-functions-commons/dist/src/utils/unique_email_enforcement/storage";
 import { getConfigOrThrow } from "../utils/config";
-import {
-  profileEmailTableClient,
-  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
-} from "../utils/unique_email_enforcement";
+import { profileEmailTableClient } from "../utils/unique_email_enforcement";
 import { ValidateProfileEmail } from "./handler";
 
 const config = getConfigOrThrow();
@@ -69,8 +66,7 @@ app.get(
       confirmValidationUrl: config.CONFIRM_CHOICE_PAGE_URL,
       validationCallbackUrl: validationCallbackValidUrl
     },
-    profileEmailsReader,
-    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
+    profileEmailsReader
   )
 );
 

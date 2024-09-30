@@ -17,7 +17,6 @@ import {
   IResponseSeeOtherRedirect,
   ResponseSeeOtherRedirect
 } from "@pagopa/ts-commons/lib/responses";
-import { FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
 import { ValidationTokenEntity } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
@@ -61,8 +60,7 @@ export const ValidateProfileEmailHandler = (
     readonly confirmValidationUrl: ValidUrl;
     readonly validationCallbackUrl: ValidUrl;
   },
-  profileEmails: IProfileEmailReader,
-  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
+  profileEmails: IProfileEmailReader
 ): IValidateProfileEmailHandler => async (
   context,
   token,
@@ -174,22 +172,20 @@ export const ValidateProfileEmailHandler = (
   }
 
   // Check if the e-mail is already taken
-  if (FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED(fiscalCode)) {
-    try {
-      const isEmailTaken = await isEmailAlreadyTaken(email)({
-        profileEmails
-      });
-      if (isEmailTaken) {
-        return ResponseSeeOtherRedirect(
-          vFailureUrl(ValidationErrors.EMAIL_ALREADY_TAKEN)
-        );
-      }
-    } catch {
-      context.log.error(`${logPrefix}| Check for e-mail uniqueness failed`);
+  try {
+    const isEmailTaken = await isEmailAlreadyTaken(email)({
+      profileEmails
+    });
+    if (isEmailTaken) {
       return ResponseSeeOtherRedirect(
-        vFailureUrl(ValidationErrors.GENERIC_ERROR)
+        vFailureUrl(ValidationErrors.EMAIL_ALREADY_TAKEN)
       );
     }
+  } catch {
+    context.log.error(`${logPrefix}| Check for e-mail uniqueness failed`);
+    return ResponseSeeOtherRedirect(
+      vFailureUrl(ValidationErrors.GENERIC_ERROR)
+    );
   }
 
   // Update the profile and set isEmailValidated to `true` ONLY if the flowChoice equals to VALIDATE
@@ -249,16 +245,14 @@ export const ValidateProfileEmail = (
     readonly confirmValidationUrl: ValidUrl;
     readonly validationCallbackUrl: ValidUrl;
   },
-  profileEmails: IProfileEmailReader,
-  FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED: (fiscalCode: FiscalCode) => boolean
+  profileEmails: IProfileEmailReader
 ): express.RequestHandler => {
   const handler = ValidateProfileEmailHandler(
     tableService,
     validationTokensTableName,
     profileModel,
     emailValidationUrls,
-    profileEmails,
-    FF_UNIQUE_EMAIL_ENFORCEMENT_ENABLED
+    profileEmails
   );
 
   const middlewaresWrap = withRequestMiddlewares(
