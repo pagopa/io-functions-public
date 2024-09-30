@@ -17,7 +17,6 @@ import {
   IResponseSeeOtherRedirect,
   ResponseSeeOtherRedirect
 } from "@pagopa/ts-commons/lib/responses";
-import { FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
 import { ValidationTokenEntity } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
