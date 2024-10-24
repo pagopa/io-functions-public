@@ -19,7 +19,7 @@ resource "azurerm_api_management_named_value" "io_fn3_public_url_v2" {
   api_management_name = var.apim_name
   resource_group_name = var.apim_resource_group_name
   display_name        = "io-fn3-public-url"
-  value               = "https://io-p-public-fn.azurewebsites.net"
+  value               = "https://io-p-itn-auth-public-func-01.azurewebsites.net"
 }
 
 resource "azurerm_api_management_named_value" "io_fn3_public_key_v2" {
