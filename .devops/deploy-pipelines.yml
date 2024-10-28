@@ -1,7 +1,7 @@
 # Azure DevOps pipeline to release a new version and deploy to production.
 
 variables:
-  HEALTHCHECK_PATH: '/info' 
+  HEALTHCHECK_PATH: '/info'
 
 parameters:
   - name: 'RELEASE_SEMVER'
@@ -19,7 +19,7 @@ parameters:
   - name: 'PRODUCTION_APP_RG'
     displayName: 'PRODUCTION_APP_RG'
     type: string
-    default: io-p-itn-auth-public-rg-01
+    default: io-p-itn-citizen-auth-shared-rg-01
 
 # Only manual activations are intended
 trigger: none
@@ -131,7 +131,7 @@ stages:
                 !__*/**/*
             displayName: 'Copy deploy files'
             
-          - task: AzureFunctionApp@1  
+          - task: AzureFunctionApp@1
             inputs:
               azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
               resourceGroupName: '${{ parameters.PRODUCTION_APP_RG }}'
@@ -164,9 +164,9 @@ stages:
       - Healthcheck
       - Deploy_staging
     jobs:
-      - job: 'do_deploy'       
+      - job: 'do_deploy'
         steps:  
-          - task: AzureAppServiceManage@0   
+          - task: AzureAppServiceManage@0
             inputs:
               azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
               resourceGroupName: '${{ parameters.PRODUCTION_APP_RG }}'
