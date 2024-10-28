@@ -1,6 +1,6 @@
 {
   "name": "@pagopa/io-functions-public",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
