@@ -12,6 +12,14 @@ parameters:
       - minor
       - patch
     default: minor
+  - name: 'PRODUCTION_APP_NAME'
+    displayName: 'PRODUCTION_APP_NAME'
+    type: string
+    default: io-p-itn-auth-public-func-01
+  - name: 'PRODUCTION_APP_RG'
+    displayName: 'PRODUCTION_APP_RG'
+    type: string
+    default: io-p-itn-auth-public-rg-01
 
 # Only manual activations are intended
 trigger: none
@@ -126,9 +134,9 @@ stages:
           - task: AzureFunctionApp@1  
             inputs:
               azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(PRODUCTION_RESOURCE_GROUP_NAME)'
+              resourceGroupName: '${{ parameters.PRODUCTION_APP_RG }}'
               appType: 'functionApp'
-              appName: '$(PRODUCTION_APP_NAME)'
+              appName: '${{ parameters.PRODUCTION_APP_NAME }}'
               package: '$(Build.ArtifactStagingDirectory)/'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
@@ -147,7 +155,7 @@ stages:
         - checkout: none
         - script: |
             # fails if response status is not 2xx
-            curl -f 'https://$(PRODUCTION_APP_NAME)-staging.azurewebsites.net/info'
+            curl -f 'https://${{ parameters.PRODUCTION_APP_NAME }}-staging.azurewebsites.net/info'
           displayName: 'Healthcheck'
 
   # Promote the staging instance to production
@@ -161,8 +169,8 @@ stages:
           - task: AzureAppServiceManage@0   
             inputs:
               azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(PRODUCTION_RESOURCE_GROUP_NAME)'
-              webAppName: '$(PRODUCTION_APP_NAME)'
+              resourceGroupName: '${{ parameters.PRODUCTION_APP_RG }}'
+              webAppName: '${{ parameters.PRODUCTION_APP_NAME }}'
               sourceSlot: staging
               swapWithProduction: true
             displayName: Swap with production slot
