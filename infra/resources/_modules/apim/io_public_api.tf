@@ -15,6 +15,8 @@ module "apim_v2_product_public" {
 
 # Named Value io_fn3_public_url
 resource "azurerm_api_management_named_value" "io_fn3_public_url_v2" {
+  count = var.migration ? 0 : 1
+
   name                = "io-fn3-public-url"
   api_management_name = var.apim_name
   resource_group_name = var.apim_resource_group_name
@@ -23,6 +25,8 @@ resource "azurerm_api_management_named_value" "io_fn3_public_url_v2" {
 }
 
 resource "azurerm_api_management_named_value" "io_fn3_public_key_v2" {
+  count = var.migration ? 0 : 1
+
   name                = "io-fn3-public-key"
   api_management_name = var.apim_name
   resource_group_name = var.apim_resource_group_name

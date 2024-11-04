@@ -22,3 +22,9 @@ variable "key_vault_common_id" {
   type        = string
   description = "ID of the common key vault"
 }
+
+variable "migration" {
+  type        = bool
+  default     = false
+  description = "Specify if it is a migration"
+}
