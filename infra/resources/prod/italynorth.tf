@@ -1,8 +1,6 @@
 module "apim_itn" {
   source = "../_modules/apim"
 
-  migration = true
-
   env_short = local.env_short
 
   apim_name                = data.azurerm_api_management.apim_itn.name
