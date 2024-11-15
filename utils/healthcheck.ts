@@ -1,5 +1,5 @@
 import { CosmosClient } from "@azure/cosmos";
-import { TableServiceClient } from "@azure/data-tables";
+import { GetPropertiesResponse, TableServiceClient } from "@azure/data-tables";
 import { toError } from "fp-ts/lib/Either";
 import { TaskEither } from "fp-ts/lib/TaskEither";
 import fetch from "node-fetch";
@@ -80,12 +80,23 @@ export const checkAzureStorageHealth = (
   connStr: string
 ): HealthCheck<"AzureStorage"> =>
   pipe(
-    // try to instantiate a client for each product of azure storage
     [TableServiceClient.fromConnectionString],
     // for each, create a task that wraps getServiceProperties
     RA.map(createService =>
       TE.tryCatch(
-        () => createService(connStr).getProperties(),
+        () =>
+          new Promise<GetPropertiesResponse>((resolve, reject) =>
+            createService(connStr)
+              .getProperties()
+              .then(
+                result => {
+                  resolve(result);
+                },
+                err => {
+                  reject(err.message.replace(/\n/gim, " ")); // avoid newlines
+                }
+              )
+          ),
         toHealthProblems("AzureStorage")
       )
     ),

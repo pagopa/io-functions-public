@@ -43,7 +43,6 @@
     "@pagopa/openapi-codegen-ts": "^10.0.5",
     "@pagopa/ts-commons": "^12.5.0",
     "applicationinsights": "^2.9.2",
-    "azure-storage": "^2.10.7",
     "base64url": "^3.0.1",
     "express": "^4.15.3",
     "fp-ts": "^2.16.1",
