@@ -1,6 +1,6 @@
 import { CosmosClient } from "@azure/cosmos";
 import { Context } from "@azure/functions";
-import { createTableService } from "azure-storage";
+import { TableClient } from "@azure/data-tables";
 
 import * as express from "express";
 import * as winston from "winston";
@@ -39,7 +39,10 @@ if (isLeft(errorOrValidationCallbackValidUrl)) {
 }
 const validationCallbackValidUrl = errorOrValidationCallbackValidUrl.right;
 
-const tableService = createTableService(config.StorageConnection);
+const tableClient = TableClient.fromConnectionString(
+  config.StorageConnection,
+  VALIDATION_TOKEN_TABLE_NAME
+);
 
 const cosmosClient = new CosmosClient({
   endpoint: config.COSMOSDB_URI,
@@ -59,8 +62,7 @@ const profileEmailsReader = new DataTableProfileEmailsRepository(
 app.get(
   "/validate-profile-email",
   ValidateProfileEmail(
-    tableService,
-    VALIDATION_TOKEN_TABLE_NAME,
+    tableClient,
     profileModel,
     {
       confirmValidationUrl: config.CONFIRM_CHOICE_PAGE_URL,

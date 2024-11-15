@@ -1,11 +1,5 @@
 import { CosmosClient } from "@azure/cosmos";
-import {
-  common as azurestorageCommon,
-  createBlobService,
-  createFileService,
-  createQueueService,
-  createTableService
-} from "azure-storage";
+import { TableServiceClient } from "@azure/data-tables";
 import { toError } from "fp-ts/lib/Either";
 import { TaskEither } from "fp-ts/lib/TaskEither";
 import fetch from "node-fetch";
@@ -87,26 +81,11 @@ export const checkAzureStorageHealth = (
 ): HealthCheck<"AzureStorage"> =>
   pipe(
     // try to instantiate a client for each product of azure storage
-    [
-      createBlobService,
-      createFileService,
-      createQueueService,
-      createTableService
-    ],
+    [TableServiceClient.fromConnectionString],
     // for each, create a task that wraps getServiceProperties
     RA.map(createService =>
       TE.tryCatch(
-        () =>
-          new Promise<
-            azurestorageCommon.models.ServicePropertiesResult.ServiceProperties
-          >((resolve, reject) =>
-            createService(connStr).getServiceProperties((err, result) => {
-              // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-              err
-                ? reject(err.message.replace(/\n/gim, " ")) // avoid newlines
-                : resolve(result);
-            })
-          ),
+        () => createService(connStr).getProperties(),
         toHealthProblems("AzureStorage")
       )
     ),
