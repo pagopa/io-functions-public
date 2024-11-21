@@ -18,7 +18,7 @@ import {
   ResponseSeeOtherRedirect
 } from "@pagopa/ts-commons/lib/responses";
 import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
-import { ValidationTokenEntity } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
+import { ValidationTokenEntityAzureDataTables } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import {
@@ -107,7 +107,7 @@ export const ValidateProfileEmailHandler = (
   }
 
   // Check if the entity is a ValidationTokenEntity
-  const errorOrValidationTokenEntity = ValidationTokenEntity.decode(
+  const errorOrValidationTokenEntity = ValidationTokenEntityAzureDataTables.decode(
     maybeTokenEntity.value
   );
 
