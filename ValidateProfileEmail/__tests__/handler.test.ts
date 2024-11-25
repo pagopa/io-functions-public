@@ -3,7 +3,6 @@ import { ResourceNotFoundCode } from "@pagopa/io-functions-commons/dist/src/util
 import { ValidateProfileEmailHandler } from "../handler";
 import { EmailString, FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import { IProfileEmailReader } from "@pagopa/io-functions-commons/dist/src/utils/unique_email_enforcement";
-import { constTrue } from "fp-ts/lib/function";
 import * as TE from "fp-ts/TaskEither";
 import * as O from "fp-ts/Option";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
@@ -50,18 +49,16 @@ const emailValidationUrls = { confirmValidationUrl, validationCallbackUrl };
 
 const mockRetrieveEntity = jest
   .fn()
-  .mockImplementation((_, __, ___, ____, f) => {
-    f(undefined, {
-      Email: anEmail,
-      FiscalCode: aFiscalCode,
-      InvalidAfter: new Date(Date.now() + 1000 * 1000).toISOString(),
-      PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-      RowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
-    });
+  .mockResolvedValue({
+    Email: anEmail,
+    FiscalCode: aFiscalCode,
+    InvalidAfter: new Date(Date.now() + 1000 * 1000).toISOString(),
+    partitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
+    rowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
   });
 
-const tableServiceMock = {
-  retrieveEntity: mockRetrieveEntity
+const tableClientMock = {
+  getEntity: mockRetrieveEntity
 };
 
 function generateProfileEmails(
@@ -87,8 +84,8 @@ const expiredTokenEntity = {
   Email: anEmail,
   FiscalCode: aFiscalCode,
   InvalidAfter: new Date(Date.now() - 1000 * 1000).toISOString(),
-  PartitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
-  RowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
+  partitionKey: "01DPT9QAZ6N0FJX21A86FRCWB3",
+  rowKey: "026c47ead971b9af13353f5d5e563982ebca542f8df3246bdaf1f86e16075072"
 };
 
 // Flow types:
@@ -104,20 +101,19 @@ describe.each`
   });
 
   it.each`
-    scenario                                                             | expectedError      | callbackInputs
-    ${"GENERIC_ERROR in case the query versus the table storage fails"}  | ${"GENERIC_ERROR"} | ${[new Error()]}
-    ${"INVALID_TOKEN error in case the token if not found in the table"} | ${"INVALID_TOKEN"} | ${[{ code: ResourceNotFoundCode }]}
-    ${"TOKEN_EXPIRED error in case the token is expired"}                | ${"TOKEN_EXPIRED"} | ${[undefined, expiredTokenEntity]}
+    scenario                                                             | expectedError      | retrieveResult                      | isApiError
+    ${"GENERIC_ERROR in case the query versus the table storage fails"}  | ${"GENERIC_ERROR"} | ${new Error()}                      | ${true}
+    ${"INVALID_TOKEN error in case the token if not found in the table"} | ${"INVALID_TOKEN"} | ${{ code: ResourceNotFoundCode }}   | ${true}
+    ${"TOKEN_EXPIRED error in case the token is expired"}                | ${"TOKEN_EXPIRED"} | ${expiredTokenEntity}               | ${false}
   `(
     "should return a redirect with a $scenario",
-    async ({ callbackInputs, expectedError }) => {
-      mockRetrieveEntity.mockImplementationOnce((_, __, ___, ____, f) => {
-        f(...callbackInputs);
-      });
+    async ({ retrieveResult, expectedError, isApiError }) => {
+      isApiError ?
+        mockRetrieveEntity.mockRejectedValueOnce(retrieveResult) :
+        mockRetrieveEntity.mockResolvedValueOnce(retrieveResult);
 
       const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-        tableServiceMock as any,
-        "",
+        tableClientMock as any,
         mockProfileModel,
         emailValidationUrls,
         profileEmailReader
@@ -146,8 +142,7 @@ describe.each`
     "should $scenario",
     async ({ expectedError, isThrowing, isConfirmFlow }) => {
       const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-        tableServiceMock as any,
-        "",
+        tableClientMock as any,
         mockProfileModel,
         emailValidationUrls,
         {
@@ -178,8 +173,7 @@ describe("ValidateProfileEmailHandler#Happy path", () => {
 
   it("should validate the email in profile if all the condition are verified during VALIDATE flow", async () => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
+      tableClientMock as any,
       mockProfileModel,
       emailValidationUrls,
       {
@@ -205,8 +199,7 @@ describe("ValidateProfileEmailHandler#Happy path", () => {
 
   it("should NOT validate the email in profile if we are in the CONFIRM flow", async () => {
     const verifyProfileEmailHandler = ValidateProfileEmailHandler(
-      tableServiceMock as any,
-      "",
+      tableClientMock as any,
       mockProfileModel,
       emailValidationUrls,
       {

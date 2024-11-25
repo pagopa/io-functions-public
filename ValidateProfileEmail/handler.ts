@@ -9,7 +9,7 @@ import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/function";
 
 import { Context } from "@azure/functions";
-import { TableService } from "azure-storage";
+import { TableClient } from "@azure/data-tables";
 
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import {
@@ -18,9 +18,8 @@ import {
   ResponseSeeOtherRedirect
 } from "@pagopa/ts-commons/lib/responses";
 import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
-import { ValidationTokenEntity } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
+import { ValidationTokenEntityAzureDataTables } from "@pagopa/io-functions-commons/dist/src/entities/validation_token";
 import { ProfileModel } from "@pagopa/io-functions-commons/dist/src/models/profile";
-import { retrieveTableEntity } from "@pagopa/io-functions-commons/dist/src/utils/azure_storage";
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import {
   withRequestMiddlewares,
@@ -32,6 +31,7 @@ import {
   isEmailAlreadyTaken
 } from "@pagopa/io-functions-commons/dist/src/utils/unique_email_enforcement";
 import { trackEvent } from "../utils/appinsights";
+import { retrieveTableEntity } from "../utils/azure_storage";
 import {
   ConfirmEmailFlowQueryParamMiddleware,
   FlowType,
@@ -53,8 +53,7 @@ type IValidateProfileEmailHandler = (
 ) => Promise<IResponseSeeOtherRedirect | IResponseErrorValidation>;
 
 export const ValidateProfileEmailHandler = (
-  tableService: TableService,
-  validationTokensTableName: string,
+  tableClient: TableClient,
   profileModel: ProfileModel,
   emailValidationUrls: {
     readonly confirmValidationUrl: ValidUrl;
@@ -84,8 +83,7 @@ export const ValidateProfileEmailHandler = (
 
   // Retrieve the entity from the table storage
   const errorOrMaybeTableEntity = await retrieveTableEntity(
-    tableService,
-    validationTokensTableName,
+    tableClient,
     tokenId,
     validatorHash
   );
@@ -109,7 +107,7 @@ export const ValidateProfileEmailHandler = (
   }
 
   // Check if the entity is a ValidationTokenEntity
-  const errorOrValidationTokenEntity = ValidationTokenEntity.decode(
+  const errorOrValidationTokenEntity = ValidationTokenEntityAzureDataTables.decode(
     maybeTokenEntity.value
   );
 
@@ -238,8 +236,7 @@ export const ValidateProfileEmailHandler = (
  */
 
 export const ValidateProfileEmail = (
-  tableService: TableService,
-  validationTokensTableName: string,
+  tableClient: TableClient,
   profileModel: ProfileModel,
   emailValidationUrls: {
     readonly confirmValidationUrl: ValidUrl;
@@ -248,8 +245,7 @@ export const ValidateProfileEmail = (
   profileEmails: IProfileEmailReader
 ): express.RequestHandler => {
   const handler = ValidateProfileEmailHandler(
-    tableService,
-    validationTokensTableName,
+    tableClient,
     profileModel,
     emailValidationUrls,
     profileEmails
